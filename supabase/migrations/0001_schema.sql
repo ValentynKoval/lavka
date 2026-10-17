@@ -74,9 +74,9 @@ create index products_status_idx   on public.products (status, created_at desc);
 create index products_category_idx on public.products (category_slug) where status = 'active';
 create index products_price_idx    on public.products (price) where status = 'active';
 create index products_materials_idx on public.products using gin (materials);
-create index products_search_idx   on public.products using gin (
-  to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(description, '') || ' ' || array_to_string(tags, ' '))
-);
+create index products_tags_idx     on public.products using gin (tags);
+-- Free-text search over title/description/tags runs in the application layer;
+-- a tsvector index can be added later via a generated column if the catalogue grows.
 
 create table public.product_images (
   id         uuid primary key default gen_random_uuid(),

@@ -17,8 +17,9 @@ import pg from "pg";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "supabase/migrations");
 
-function connectionString() {
-  if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
+/** Candidate connection strings: explicit URL, then the session pooler hosts for the configured region. */
+function connectionStrings() {
+  if (process.env.SUPABASE_DB_URL) return [process.env.SUPABASE_DB_URL];
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const password = process.env.SUPABASE_DB_PASSWORD;
   if (!url || !password) {
@@ -27,11 +28,26 @@ function connectionString() {
   }
   const ref = new URL(url).hostname.split(".")[0];
   const region = process.env.SUPABASE_DB_REGION ?? "eu-central-1";
-  return `postgresql://postgres.${ref}:${encodeURIComponent(password)}@aws-0-${region}.pooler.supabase.com:5432/postgres`;
+  return ["aws-1", "aws-0"].map(
+    (prefix) => `postgresql://postgres.${ref}:${encodeURIComponent(password)}@${prefix}-${region}.pooler.supabase.com:5432/postgres`,
+  );
 }
 
-const client = new pg.Client({ connectionString: connectionString(), ssl: { rejectUnauthorized: false } });
-await client.connect();
+async function connect() {
+  let lastError;
+  for (const connectionString of connectionStrings()) {
+    const candidate = new pg.Client({ connectionString, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 10_000 });
+    try {
+      await candidate.connect();
+      return candidate;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+const client = await connect();
 try {
   await client.query("create table if not exists public.schema_migrations (name text primary key, applied_at timestamptz not null default now())");
   const { rows } = await client.query("select name from public.schema_migrations");
