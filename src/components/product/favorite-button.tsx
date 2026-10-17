@@ -37,7 +37,7 @@ export function FavoriteButton({ productId, className, size = "sm", withLabel }:
       )}
     >
       <Heart className={cn("h-[18px] w-[18px] transition-transform", active && "fill-current")} />
-      {withLabel && <span className="text-sm">{active ? "В обраному" : "В обране"}</span>}
+      {withLabel && <span className="whitespace-nowrap text-sm">{active ? "В обраному" : "В обране"}</span>}
     </button>
   );
 }
