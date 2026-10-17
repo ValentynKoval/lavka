@@ -1,26 +1,135 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Lavka design tokens — a warm, tactile palette for handmade goods.
+ * Linen backgrounds, clay/terracotta accent, moss green for calm states,
+ * charcoal ink for text. Serif display face for headings, humanist sans for UI.
+ */
+@theme {
+  --color-linen-50: #fbf8f3;
+  --color-linen-100: #f6f0e6;
+  --color-linen-200: #ece2d2;
+  --color-linen-300: #dccdb6;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-clay-50: #fbf0ea;
+  --color-clay-100: #f5dccf;
+  --color-clay-200: #e9b9a1;
+  --color-clay-400: #d08560;
+  --color-clay-500: #c2633f;
+  --color-clay-600: #a84f2f;
+  --color-clay-700: #873e25;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-moss-100: #e4e9d8;
+  --color-moss-500: #6b7a4b;
+  --color-moss-600: #55623a;
+  --color-moss-700: #434d2d;
+
+  --color-ink-900: #2b2622;
+  --color-ink-700: #4a423c;
+  --color-ink-500: #7a6f66;
+  --color-ink-300: #b5aba1;
+
+  --color-sand-400: #d9a441;
+  --color-sand-500: #c48d2a;
+
+  --color-danger-500: #b4433a;
+  --color-danger-50: #fbecea;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
+
+  --spacing-13: 3.25rem;
+
+  --shadow-card: 0 1px 2px rgb(43 38 34 / 0.05), 0 8px 24px -12px rgb(43 38 34 / 0.18);
+  --shadow-card-hover: 0 2px 4px rgb(43 38 34 / 0.06), 0 18px 40px -16px rgb(43 38 34 / 0.28);
+  --shadow-float: 0 12px 40px -10px rgb(43 38 34 / 0.35);
+
+  --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-linen-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: var(--color-clay-200);
+    color: var(--color-ink-900);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-clay-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility paper-texture {
+  background-image:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.6), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgb(194 99 63 / 0.08), transparent 45%);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
 }
