@@ -2,7 +2,7 @@
 
 > A portfolio project: a niche marketplace where Ukrainian makers sell ceramics, jewelry, textiles, woodwork, candles, art and leather goods. UI in Ukrainian, code in English.
 
-**Live demo:** https://lavka-valentyngolf.vercel.app · **Repository:** https://github.com/ValentynKoval/lavka
+**Live demo:** https://lavka-green.vercel.app · **Repository:** https://github.com/ValentynKoval/lavka
 
 ![Lavka home page](docs/screenshots/home.png)
 
