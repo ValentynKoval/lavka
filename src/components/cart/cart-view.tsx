@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { BadgePercent, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { getProductsByIdsAction } from "@/lib/catalog/actions";
+import { validatePromoAction } from "@/lib/orders/actions";
+import { computeCheckout } from "@/lib/orders/checkout";
 import { cartTotals, groupByShop } from "@/lib/cart/cart";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { syncCartLineAction } from "@/lib/user-data/actions";
@@ -13,6 +15,7 @@ import { formatPrice, plural } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Price } from "@/components/ui/price";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
 
@@ -21,7 +24,11 @@ export function CartView() {
   const hydrated = useCartStore((s) => s.hydrated);
   const setQuantity = useCartStore((s) => s.setQuantity);
   const remove = useCartStore((s) => s.remove);
+  const promo = useCartStore((s) => s.promo);
+  const setPromo = useCartStore((s) => s.setPromo);
   const [products, setProducts] = useState<Map<string, Product> | null>(null);
+  const [promoInput, setPromoInput] = useState(promo?.code ?? "");
+  const [checkingPromo, startPromo] = useTransition();
 
   const idsKey = lines.map((l) => l.productId).sort().join(",");
   useEffect(() => {
@@ -45,7 +52,19 @@ export function CartView() {
   }, [lines, products]);
 
   const totals = cartTotals(detailed);
+  const checkout = computeCheckout(detailed, promo?.percent ?? 0);
   const groups = groupByShop(detailed);
+  const applyPromo = () =>
+    startPromo(async () => {
+      const result = await validatePromoAction(promoInput);
+      if ("error" in result) {
+        toast.error(result.error);
+        setPromo(null);
+      } else {
+        setPromo(result);
+        toast.success(`Промокод ${result.code} застосовано: −${result.percent}%`);
+      }
+    });
   const unavailable = products ? lines.filter((l) => !products.has(l.productId)) : [];
 
   const update = (product: Product, quantity: number) => {
@@ -155,8 +174,14 @@ export function CartView() {
           </div>
           {totals.discount > 0 && (
             <div className="flex justify-between text-clay-200">
-              <dt>Знижка</dt>
+              <dt>Знижка на товари</dt>
               <dd className="tabular-nums">−{formatPrice(totals.discount)}</dd>
+            </div>
+          )}
+          {checkout.discount > 0 && (
+            <div className="flex justify-between text-clay-200">
+              <dt>Промокод {promo?.code}</dt>
+              <dd className="tabular-nums">−{formatPrice(checkout.discount)}</dd>
             </div>
           )}
           <div className="flex justify-between text-linen-300">
@@ -167,12 +192,24 @@ export function CartView() {
         <div className="my-4 h-px bg-white/10" />
         <div className="flex items-baseline justify-between">
           <span className="font-semibold">До сплати</span>
-          <span className="font-display text-3xl font-semibold tabular-nums">{formatPrice(totals.total)}</span>
+          <span className="font-display text-3xl font-semibold tabular-nums">{formatPrice(checkout.total)}</span>
         </div>
-        <Button size="lg" className="mt-6 w-full" disabled>
+        <div className="mt-5">
+          <label htmlFor="cart-promo" className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-linen-300">
+            <BadgePercent className="h-3.5 w-3.5" /> Промокод
+          </label>
+          <div className="flex gap-2">
+            <Input id="cart-promo" value={promoInput} onChange={(e) => setPromoInput(e.target.value.toUpperCase())} placeholder="LAVKA10" className="h-10 border-white/10 bg-white/10 text-linen-50 uppercase placeholder:text-linen-300/60" />
+            <Button type="button" variant="outline" size="sm" className="h-10 border-white/20 bg-transparent text-linen-50 hover:bg-white/10" loading={checkingPromo} onClick={applyPromo}>
+              OK
+            </Button>
+          </div>
+          {promo && <p className="mt-1.5 text-xs text-moss-100">Застосовано {promo.code} (−{promo.percent}%)</p>}
+        </div>
+        <Button href="/checkout" size="lg" className="mt-5 w-full">
           Оформити замовлення
         </Button>
-        <p className="mt-3 text-center text-xs text-linen-300">Оплата й оформлення — у другому етапі проєкту.</p>
+        <p className="mt-3 text-center text-xs text-linen-300">Оплата тестова — гроші не списуються.</p>
       </aside>
     </div>
   );

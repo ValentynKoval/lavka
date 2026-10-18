@@ -67,6 +67,50 @@
   }
 }
 
+/* Dark theme: the same semantic tokens, inverted. Applied by data-theme on <html>. */
+:root[data-theme="dark"] {
+  --color-linen-50: #15120e;
+  --color-linen-100: #1d1915;
+  --color-linen-200: #2a241e;
+  --color-linen-300: #3a3229;
+
+  --color-clay-50: #3a261d;
+  --color-clay-100: #4a2e21;
+  --color-clay-200: #7a4a35;
+  --color-clay-700: #e9b9a1;
+
+  --color-moss-100: #28311f;
+  --color-moss-700: #c9d5ad;
+
+  --color-ink-900: #f3ede4;
+  --color-ink-700: #d9d0c4;
+  --color-ink-500: #a69c90;
+  --color-ink-300: #6b6259;
+
+  --color-danger-50: #3b1f1d;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 40px -16px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 12px 40px -10px rgb(0 0 0 / 0.8);
+}
+
+/* Surfaces that use pure white in light mode become the card tone in dark mode. */
+:root[data-theme="dark"] .bg-white {
+  background-color: var(--color-linen-100);
+}
+:root[data-theme="dark"] .bg-white\/90,
+:root[data-theme="dark"] .bg-white\/70,
+:root[data-theme="dark"] .bg-white\/60,
+:root[data-theme="dark"] .bg-white\/50 {
+  background-color: color-mix(in oklab, var(--color-linen-100) 85%, transparent);
+}
+:root[data-theme="dark"] .border-white {
+  border-color: var(--color-linen-100);
+}
+:root[data-theme="dark"] img {
+  filter: brightness(0.92);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, MapPin, PackageCheck, Truck, Undo2 } from "lucide-react";
+import { ChevronRight, MapPin, MessageCircle, PackageCheck, Truck, Undo2 } from "lucide-react";
 import { categoryBySlug, materialBySlug, regionBySlug } from "@/data/taxonomy";
 import { getCatalogRepository } from "@/lib/repositories";
+import { getCurrentUser } from "@/lib/auth/session";
+import { startConversationAction } from "@/lib/chat/actions";
+import { ReviewsSection } from "@/components/product/reviews-section";
+import { RecentlyViewed, TrackProductView } from "@/components/product/recently-viewed";
+import { RatingStars } from "@/components/ui/rating-stars";
+import { ProductJsonLd } from "@/components/seo/json-ld";
 import { Gallery } from "@/components/product/gallery";
 import { AddToCartButton } from "@/components/product/add-to-cart-button";
 import { FavoriteButton } from "@/components/product/favorite-button";
@@ -31,16 +37,20 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const product = await repo.getProductBySlug(slug);
   if (!product) notFound();
 
-  const [related, shop] = await Promise.all([
+  const [related, shop, user] = await Promise.all([
     repo.getRelatedProducts(product, 4),
     product.shop ? repo.getShopBySlug(product.shop.slug) : Promise.resolve(null),
+    getCurrentUser(),
   ]);
+  const chat = startConversationAction.bind(null, product.shopId, product.shop?.slug ?? "");
   const category = categoryBySlug(product.categorySlug);
   const region = product.shop ? regionBySlug(product.shop.regionSlug)?.name : undefined;
   const lowStock = product.stock > 0 && product.stock <= 3;
 
   return (
     <div className="container-page py-8 sm:py-12">
+      <TrackProductView productId={product.id} />
+      <ProductJsonLd product={product} />
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-ink-500" aria-label="Хлібні крихти">
         <Link href="/" className="hover:text-clay-600">Головна</Link>
         <ChevronRight className="h-3 w-3" />
@@ -71,6 +81,12 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
             )}
           </div>
           <h1 className="mt-4 text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">{product.title}</h1>
+          {product.rating && (
+            <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-sm text-ink-500 hover:text-clay-600">
+              <RatingStars value={product.rating.average} size="md" showValue />
+              <span>{product.rating.count} {plural(product.rating.count, ["відгук", "відгуки", "відгуків"])}</span>
+            </a>
+          )}
 
           {product.shop && (
             <Link href={`/shop/${product.shop.slug}`} className="group mt-4 inline-flex items-center gap-3">
@@ -95,6 +111,11 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
             <AddToCartButton product={product} />
             <FavoriteButton productId={product.id} size="md" withLabel className="w-fit bg-linen-100 shadow-none hover:bg-linen-200" />
           </div>
+          <form action={chat} className="mt-3">
+            <button type="submit" className="inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:underline">
+              <MessageCircle className="h-4 w-4" /> Написати майстру — уточнити розмір чи колір
+            </button>
+          </form>
 
           <div className="mt-8 space-y-4 text-[15px] leading-relaxed text-ink-700">
             {product.description.split("\n").map((p, i) => (
@@ -156,12 +177,15 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         </section>
       )}
 
+      <ReviewsSection product={product} user={user} />
+
       {related.length > 0 && (
         <section className="mt-20">
           <SectionHeading eyebrow="Схоже" title="Вам також може сподобатись" href={category ? `/catalog?category=${category.slug}` : "/catalog"} />
           <ProductGrid products={related} />
         </section>
       )}
+      <RecentlyViewed excludeId={product.id} />
     </div>
   );
 }

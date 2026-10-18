@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart, ShoppingBag, Store } from "lucide-react";
+import { Heart, MessageCircle, ShoppingBag, Store } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { Logo } from "./logo";
 import { SearchBar } from "./search-bar";
@@ -7,9 +7,11 @@ import { UserMenu } from "./user-menu";
 import { CartBadge, FavoritesBadge } from "./header-badges";
 import { MobileNav } from "./mobile-nav";
 import { UserDataSync } from "./user-data-sync";
+import { ThemeToggle } from "./theme-toggle";
+import { CommandPaletteTrigger } from "./command-palette";
 import { CATEGORIES } from "@/data/taxonomy";
 
-export function Header({ user, demo }: { user: Profile | null; demo: boolean }) {
+export function Header({ user, demo, unread = 0 }: { user: Profile | null; demo: boolean; unread?: number }) {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-900/10 bg-linen-50/85 backdrop-blur-md">
       {demo && (
@@ -34,10 +36,12 @@ export function Header({ user, demo }: { user: Profile | null; demo: boolean }) 
             <Store className="h-4 w-4" /> Продавати
           </Link>
         </nav>
-        <div className="hidden flex-1 justify-center md:flex">
+        <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
           <SearchBar className="w-full max-w-md" />
+          <CommandPaletteTrigger className="hidden xl:inline-flex" />
         </div>
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <ThemeToggle className="hidden sm:flex" />
           <Link
             href="/favorites"
             className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-900/5 hover:text-clay-600"
@@ -46,6 +50,20 @@ export function Header({ user, demo }: { user: Profile | null; demo: boolean }) 
             <Heart className="h-5 w-5" />
             <FavoritesBadge />
           </Link>
+          {user && (
+            <Link
+              href="/messages"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-900/5 hover:text-clay-600"
+              aria-label="Повідомлення"
+            >
+              <MessageCircle className="h-5 w-5" />
+              {unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-clay-500 px-1 text-[11px] font-bold text-white ring-2 ring-linen-50">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
+            </Link>
+          )}
           <Link
             href="/cart"
             className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-900/5 hover:text-clay-600"

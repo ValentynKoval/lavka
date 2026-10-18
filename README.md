@@ -14,13 +14,18 @@
 | Catalog | Full-text search, filters by category, material, maker region, price range and stock; four sort orders; URL-driven state (shareable links), pagination. |
 | Product | Gallery with thumbnails, price with discounts, stock badges, materials/region facts, related products, maker story block. |
 | Makers | Public shop page with cover, avatar, story and all products; makers directory. |
-| Buyer | Favourites and cart persisted in the browser and synced to the account after sign-in; cart grouped by maker with totals and discounts. |
-| Auth | E-mail + password sign-up / sign-in (Supabase Auth), roles buyer / seller / admin. |
-| Seller cabinet | Open a shop (onboarding), dashboard with stock alerts, product CRUD with multi-image upload to Supabase Storage, inline stock editing, drafts/archive. |
-| Data | Postgres schema with RLS policies, triggers and a storage bucket; migrations in the repo; seed script with 10 shops and 60+ products. |
+| Buyer | Favourites and cart persisted in the browser and synced to the account after sign-in; cart grouped by maker; promo codes; recently viewed products. |
+| Checkout & orders | Multi-shop checkout (one order per maker), Nova Poshta delivery form, demo card / cash-on-delivery, atomic `place_order` RPC that validates and decrements stock; order history with status timeline. |
+| Reviews | Star ratings with distribution, verified-purchase badge, one review per user per product, ratings on cards and in JSON-LD. |
+| Chat | Buyer ↔ maker conversations with Supabase Realtime (polling fallback in demo mode), unread badges, read receipts. |
+| Auth | E-mail + password sign-up / sign-in (Supabase Auth), roles buyer / seller / admin with RLS-enforced permissions. |
+| Seller cabinet | Shop onboarding, dashboard, product CRUD with multi-image upload, inline stock editing, order management with status transitions, analytics (views, revenue, conversion, top products, status donut) on dependency-free SVG charts. |
+| Admin panel | Platform stats and charts, product moderation, hiding shops, role management through the service role. |
+| UX extras | ⌘K command palette search, dark mode (token-based, no flash), image zoom on hover, Open Graph images generated per product, sitemap, robots, PWA manifest, Schema.org JSON-LD. |
+| Data | Postgres schema with RLS policies, triggers, RPCs and a storage bucket; five migrations in the repo; deterministic seed with 10 shops, 69 products, 126 reviews, 36 orders and chat history. |
 | Demo mode | Without Supabase keys the app runs on the same data through an in-memory repository layer, so the UI works anywhere. |
 
-Stage 2 (planned): chat with the maker, Stripe test checkout, orders, reviews, admin moderation, analytics.
+Not included (out of scope for a portfolio): real payments, e-mail notifications, shipping APIs.
 
 ## Screenshots
 
@@ -45,19 +50,21 @@ Stage 2 (planned): chat with the maker, Stripe test checkout, orders, reviews, a
 
 ```
 src/
-  app/            routes (home, catalog, product, shop, shops, favorites, cart, login, register, seller/*)
+  app/            routes (home, catalog, product, shop, shops, favorites, cart, checkout, orders, messages, login, register, seller/*, admin/*)
   components/     ui primitives, layout, product, catalog, cart, auth, seller, home sections
   data/           taxonomy (categories, materials, regions) and demo dataset
   lib/
     catalog/      pure filter / sort / pagination / URL-param logic (tested)
     cart/         pure cart math (tested)
-    repositories/ CatalogRepository, SellerRepository, UserDataRepository, AuthService
+    orders/       checkout totals, promo codes, phone normalisation (tested)
+    stats/        analytics aggregation and order status machine (tested)
+    repositories/ Catalog, Seller, UserData, Auth, Orders, Reviews, Chat, Stats, Admin repositories
       mock/       in-memory implementation on demo data
       supabase/   Postgres implementation
     stores/       Zustand stores (cart, favourites)
     supabase/     server/browser clients, DB row types
 supabase/
-  migrations/     0001 schema, 0002 RLS, 0003 storage
+  migrations/     0001 schema, 0002 RLS, 0003 storage, 0004 commerce (orders, reviews, chat, views), 0005 fixes
   seed.ts         idempotent seed using the service role key
 scripts/          demo image downloader, migration runner
 ```
@@ -74,7 +81,15 @@ cp .env.example .env.local   # leave empty for demo mode
 npm run dev                  # http://localhost:3000
 ```
 
-Demo seller account (demo mode and seeded database): `olena@lavka.demo` / `demo1234` (other makers: `marta@`, `iryna@`, `vasyl@`, `halyna@`, `petro@`, `sofia@`, `andrii@`, `taras@`, `oksana@lavka.demo`).
+Demo accounts (demo mode and seeded database), password `demo1234` for all:
+
+| Role | E-mail |
+| --- | --- |
+| Maker | `olena@lavka.demo` (also `marta@`, `iryna@`, `vasyl@`, `halyna@`, `petro@`, `sofia@`, `andrii@`, `taras@`, `oksana@lavka.demo`) |
+| Buyer | `buyer@lavka.demo`, `dmytro@`, `olha@`, `nazar@`, `yulia@lavka.demo` |
+| Admin | `admin@lavka.demo` |
+
+Promo codes: `LAVKA10`, `HANDMADE15`, `WELCOME5`.
 
 ### Connecting Supabase
 
@@ -96,11 +111,12 @@ Demo seller account (demo mode and seeded database): `olena@lavka.demo` / `demo1
 | `npm run dev` / `npm run dev:demo` | Dev server (the latter forces demo data even with keys present) |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
-| `npm run test` | Vitest unit tests (filters, URL params, cart, utils) |
+| `npm run test` | Vitest unit tests (filters, URL params, cart, checkout, analytics, utils) |
 | `npm run build` | Production build |
 | `npm run check` | All of the above in sequence |
 | `npm run demo:images` | Re-download demo photos from Unsplash into `public/demo` |
 | `npm run db:migrate` / `npm run db:seed` | Apply migrations / seed Supabase |
+| `node --env-file=.env.local scripts/db-sql.mjs "<sql>"` | Run an ad-hoc SQL statement against the database |
 
 ### Environment variables
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { LogOut, Package, Store, User as UserIcon } from "lucide-react";
+import { Heart, LogOut, MessageCircle, Package, Receipt, ShieldCheck, Store, User as UserIcon } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { signOutAction } from "@/lib/auth/actions";
 import { buttonClasses } from "@/components/ui/button";
@@ -71,9 +71,20 @@ export function UserMenu({ user }: { user: Profile | null }) {
             {isSeller ? <Package className="h-4 w-4" /> : <Store className="h-4 w-4" />}
             {isSeller ? "Кабінет майстра" : "Відкрити лавку"}
           </Link>
-          <Link href="/favorites" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-linen-100">
-            <UserIcon className="h-4 w-4" /> Обране
+          <Link href="/orders" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-linen-100">
+            <Receipt className="h-4 w-4" /> Мої замовлення
           </Link>
+          <Link href="/messages" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-linen-100">
+            <MessageCircle className="h-4 w-4" /> Повідомлення
+          </Link>
+          <Link href="/favorites" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-linen-100">
+            <Heart className="h-4 w-4" /> Обране
+          </Link>
+          {user.role === "admin" && (
+            <Link href="/admin" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-linen-100">
+              <ShieldCheck className="h-4 w-4" /> Адмін-панель
+            </Link>
+          )}
           <div className="my-1 h-px bg-ink-900/5" />
           <form action={signOutAction}>
             <button type="submit" role="menuitem" className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-linen-100">

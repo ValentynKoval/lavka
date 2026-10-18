@@ -7,6 +7,7 @@ import { SellerCta } from "@/components/home/seller-cta";
 import { ProductGrid } from "@/components/product/product-grid";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Collections } from "@/components/home/collections";
+import { RecentlyViewed } from "@/components/product/recently-viewed";
 
 export default async function HomePage() {
   const repo = getCatalogRepository();
@@ -52,6 +53,9 @@ export default async function HomePage() {
         />
         <FeaturedShops shops={shops.slice(0, 6)} />
       </section>
+      <div className="container-page">
+        <RecentlyViewed />
+      </div>
       <SellerCta />
     </>
   );

@@ -53,11 +53,14 @@ export function cartTotals(lines: { quantity: number; product: Product }[]): Car
   return { subtotal, discount, total: subtotal - discount, itemCount };
 }
 
-/** Merges two carts (e.g. guest + account), summing quantities. */
+/**
+ * Merges two carts (e.g. guest + account). Takes the larger quantity per product
+ * so re-syncing an already synced cart never doubles lines.
+ */
 export function mergeCarts(a: CartLine[], b: CartLine[]): CartLine[] {
   const map = new Map<string, number>();
   for (const l of [...a, ...b]) {
-    map.set(l.productId, Math.min((map.get(l.productId) ?? 0) + l.quantity, MAX_QUANTITY));
+    map.set(l.productId, Math.min(Math.max(map.get(l.productId) ?? 0, l.quantity), MAX_QUANTITY));
   }
   return [...map.entries()].map(([productId, quantity]) => ({ productId, quantity }));
 }

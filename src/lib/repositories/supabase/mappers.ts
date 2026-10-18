@@ -1,9 +1,11 @@
 import type { ProductImageRow, ProductRow, ProfileRow, ShopRow } from "@/lib/supabase/database.types";
+import { ratingSummary } from "@/lib/stats/aggregate";
 import type { Product, Profile, Shop } from "@/lib/types";
 
 export type ProductRowWithRelations = ProductRow & {
   product_images?: ProductImageRow[] | null;
   shops?: Pick<ShopRow, "id" | "slug" | "name" | "region_slug" | "city" | "avatar_url"> | null;
+  reviews?: { rating: number }[] | null;
 };
 
 export function mapProfile(row: ProfileRow): Profile {
@@ -29,6 +31,7 @@ export function mapShop(row: ShopRow, productCount?: number): Shop {
     city: row.city,
     avatarUrl: row.avatar_url,
     coverUrl: row.cover_url,
+    isHidden: row.is_hidden ?? false,
     createdAt: row.created_at,
     productCount,
   };
@@ -65,8 +68,10 @@ export function mapProduct(row: ProductRowWithRelations): Product {
           avatarUrl: row.shops.avatar_url,
         }
       : undefined,
+    rating: row.reviews && row.reviews.length > 0 ? ratingSummary(row.reviews) : undefined,
   };
 }
 
+/** Products with images, shop reference (hidden shops excluded) and review ratings for cards. */
 export const PRODUCT_SELECT =
-  "*, product_images(*), shops!inner(id, slug, name, region_slug, city, avatar_url)";
+  "*, product_images(*), shops!inner(id, slug, name, region_slug, city, avatar_url, is_hidden), reviews(rating)";

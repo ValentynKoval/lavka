@@ -57,15 +57,19 @@ describe("cartTotals", () => {
 });
 
 describe("mergeCarts", () => {
-  it("sums quantities per product and caps at MAX_QUANTITY", () => {
+  it("keeps the larger quantity per product and caps at MAX_QUANTITY", () => {
     const merged = mergeCarts(
       [{ productId: a.id, quantity: 2 }, { productId: b.id, quantity: 1 }],
-      [{ productId: a.id, quantity: 98 }],
+      [{ productId: a.id, quantity: 120 }],
     );
     expect(merged).toEqual([
       { productId: a.id, quantity: MAX_QUANTITY },
       { productId: b.id, quantity: 1 },
     ]);
+  });
+  it("is idempotent when both sides already match", () => {
+    const lines = [{ productId: a.id, quantity: 1 }];
+    expect(mergeCarts(lines, lines)).toEqual(lines);
   });
 });
 

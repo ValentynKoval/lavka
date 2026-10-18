@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { CalendarDays, MapPin, Package } from "lucide-react";
+import { CalendarDays, MapPin, MessageCircle, Package } from "lucide-react";
 import { regionBySlug } from "@/data/taxonomy";
-import { getCatalogRepository } from "@/lib/repositories";
+import { getCatalogRepository, getReviewsRepository } from "@/lib/repositories";
+import { startConversationAction } from "@/lib/chat/actions";
+import { RatingStars } from "@/components/ui/rating-stars";
+import { ShopJsonLd } from "@/components/seo/json-ld";
+import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/product/product-grid";
 import { EmptyState } from "@/components/ui/empty-state";
 import { plural } from "@/lib/utils";
@@ -22,11 +26,14 @@ export default async function ShopPage({ params }: PageProps<"/shop/[slug]">) {
   const repo = getCatalogRepository();
   const shop = await repo.getShopBySlug(slug);
   if (!shop) notFound();
-  const products = await repo.getShopProducts(shop.id);
+  const [products, rating] = await Promise.all([repo.getShopProducts(shop.id), getReviewsRepository().shopSummary(shop.id)]);
+  shop.rating = rating;
   const region = regionBySlug(shop.regionSlug)?.name;
+  const chat = startConversationAction.bind(null, shop.id, shop.slug);
 
   return (
     <div>
+      <ShopJsonLd shop={shop} />
       <div className="relative h-56 w-full overflow-hidden bg-linen-200 sm:h-72 lg:h-80">
         <Image src={shop.coverUrl} alt="" fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 to-transparent" />
@@ -37,7 +44,10 @@ export default async function ShopPage({ params }: PageProps<"/shop/[slug]">) {
             <Image src={shop.avatarUrl} alt="" fill sizes="112px" className="object-cover" />
           </span>
           <div className="min-w-0 flex-1">
-            <h1 className="text-3xl font-semibold text-ink-900 sm:text-4xl">{shop.name}</h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <h1 className="text-3xl font-semibold text-ink-900 sm:text-4xl">{shop.name}</h1>
+              {rating.count > 0 && <RatingStars value={rating.average} count={rating.count} size="md" showValue />}
+            </div>
             <p className="mt-1.5 text-base font-medium text-clay-600">{shop.tagline}</p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-500">
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {shop.city}{region ? `, ${region}` : ""}</span>
@@ -45,6 +55,11 @@ export default async function ShopPage({ params }: PageProps<"/shop/[slug]">) {
               <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4" /> На Lavka з {since.format(new Date(shop.createdAt))}</span>
             </div>
           </div>
+          <form action={chat} className="lg:self-center">
+            <Button type="submit" variant="outline">
+              <MessageCircle className="h-4 w-4" /> Написати майстру
+            </Button>
+          </form>
         </div>
 
         <section className="mt-12 grid gap-10 lg:grid-cols-[1fr_2fr]">

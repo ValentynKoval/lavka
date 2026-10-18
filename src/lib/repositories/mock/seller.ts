@@ -39,6 +39,7 @@ export const mockSellerRepository: SellerRepository = {
       ownerId,
       slug: uniqueSlug(input.name, (s) => state.shops.some((x) => x.slug === s)),
       ...input,
+      isHidden: false,
       createdAt: new Date().toISOString(),
     };
     state.shops.push(shop);

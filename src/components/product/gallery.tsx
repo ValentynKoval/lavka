@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export function Gallery({ images, title }: { images: ProductImage[]; title: string }) {
   const [index, setIndex] = useState(0);
+  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const current = images[index] ?? images[0];
 
   if (!current) {
@@ -19,7 +20,14 @@ export function Gallery({ images, title }: { images: ProductImage[]; title: stri
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row-reverse lg:gap-4">
-      <div className="relative aspect-square flex-1 overflow-hidden rounded-3xl bg-linen-200 shadow-card">
+      <div
+        className="group/zoom relative aspect-square flex-1 cursor-zoom-in overflow-hidden rounded-3xl bg-linen-200 shadow-card"
+        onMouseMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+        }}
+        onMouseLeave={() => setZoom(null)}
+      >
         <Image
           key={current.id}
           src={current.url}
@@ -27,7 +35,8 @@ export function Gallery({ images, title }: { images: ProductImage[]; title: stri
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover animate-fade-up"
+          className="object-cover animate-fade-up transition-transform duration-200 ease-out"
+          style={zoom ? { transform: "scale(1.8)", transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
         />
         {images.length > 1 && (
           <>

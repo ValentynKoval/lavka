@@ -18,6 +18,13 @@ export async function requireUser(next?: string): Promise<Profile> {
   return user;
 }
 
+/** Admin-only pages: redirects everyone else to the home page. */
+export async function requireAdmin(): Promise<Profile> {
+  const user = await requireUser("/admin");
+  if (user.role !== "admin") redirect("/");
+  return user;
+}
+
 /** The signed-in master together with their shop; redirects to onboarding when the shop is missing. */
 export async function requireSeller(): Promise<{ user: Profile; shop: Shop }> {
   const user = await requireUser("/seller");

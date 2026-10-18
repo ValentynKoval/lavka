@@ -32,6 +32,11 @@ const users: Array<Omit<DemoUser, "password" | "createdAt" | "avatarUrl">> = [
   { id: "u-taras", email: "taras@lavka.demo", fullName: "Тарас Ремінь", role: "seller" },
   { id: "u-oksana", email: "oksana@lavka.demo", fullName: "Оксана Плетій", role: "seller" },
   { id: "u-buyer", email: "buyer@lavka.demo", fullName: "Катерина Покупець", role: "buyer" },
+  { id: "u-buyer2", email: "dmytro@lavka.demo", fullName: "Дмитро Коваль", role: "buyer" },
+  { id: "u-buyer3", email: "olha@lavka.demo", fullName: "Ольга Мельник", role: "buyer" },
+  { id: "u-buyer4", email: "nazar@lavka.demo", fullName: "Назар Ткачук", role: "buyer" },
+  { id: "u-buyer5", email: "yulia@lavka.demo", fullName: "Юлія Бондар", role: "buyer" },
+  { id: "u-admin", email: "admin@lavka.demo", fullName: "Адміністратор Lavka", role: "admin" },
 ];
 
 export const DEMO_USERS: DemoUser[] = users.map((u) => ({
@@ -54,6 +59,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Опішня",
     avatarUrl: img("shop-ceramics-avatar"),
     coverUrl: img("shop-ceramics-cover"),
+    isHidden: false,
     createdAt: "2026-01-12T10:00:00.000Z",
   },
   {
@@ -68,6 +74,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Львів",
     avatarUrl: img("shop-jewelry-avatar"),
     coverUrl: img("shop-jewelry-cover"),
+    isHidden: false,
     createdAt: "2026-01-15T10:00:00.000Z",
   },
   {
@@ -82,6 +89,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Чернігів",
     avatarUrl: img("shop-linen-avatar"),
     coverUrl: img("shop-linen-cover"),
+    isHidden: false,
     createdAt: "2026-01-20T10:00:00.000Z",
   },
   {
@@ -96,6 +104,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Яремче",
     avatarUrl: img("shop-knit-avatar"),
     coverUrl: img("shop-knit-cover"),
+    isHidden: false,
     createdAt: "2026-01-25T10:00:00.000Z",
   },
   {
@@ -110,6 +119,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Вінниця",
     avatarUrl: img("shop-embroidery-avatar"),
     coverUrl: img("shop-embroidery-cover"),
+    isHidden: false,
     createdAt: "2026-02-01T10:00:00.000Z",
   },
   {
@@ -124,6 +134,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Хуст",
     avatarUrl: img("shop-wood-avatar"),
     coverUrl: img("shop-wood-cover"),
+    isHidden: false,
     createdAt: "2026-02-05T10:00:00.000Z",
   },
   {
@@ -138,6 +149,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Одеса",
     avatarUrl: img("shop-candles-avatar"),
     coverUrl: img("shop-candles-cover"),
+    isHidden: false,
     createdAt: "2026-02-10T10:00:00.000Z",
   },
   {
@@ -152,6 +164,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Харків",
     avatarUrl: img("shop-art-avatar"),
     coverUrl: img("shop-art-cover"),
+    isHidden: false,
     createdAt: "2026-02-14T10:00:00.000Z",
   },
   {
@@ -166,6 +179,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Дніпро",
     avatarUrl: img("shop-leather-avatar"),
     coverUrl: img("shop-leather-cover"),
+    isHidden: false,
     createdAt: "2026-02-18T10:00:00.000Z",
   },
   {
@@ -180,6 +194,7 @@ export const DEMO_SHOPS: Shop[] = [
     city: "Васильків",
     avatarUrl: img("shop-home-avatar"),
     coverUrl: img("shop-home-cover"),
+    isHidden: false,
     createdAt: "2026-02-22T10:00:00.000Z",
   },
 ];

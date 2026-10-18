@@ -8,6 +8,7 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import { DEMO_PRODUCTS, DEMO_SHOPS, DEMO_USERS } from "../src/data/demo";
+import { DEMO_CONVERSATIONS, DEMO_MESSAGES, DEMO_ORDERS, DEMO_PROMO_CODES, DEMO_REVIEWS, DEMO_VIEWS } from "../src/data/demo-stage2";
 import type { Database } from "../src/lib/supabase/database.types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -111,7 +112,117 @@ async function main() {
     if (imgError) throw imgError;
   }
 
-  console.log(`Done: ${DEMO_USERS.length} users, ${DEMO_SHOPS.length} shops, ${DEMO_PRODUCTS.length} products.`);
+  const productIds = new Map<string, string>();
+  {
+    const { data, error } = await supabase.from("products").select("id, slug");
+    if (error) throw error;
+    for (const p of DEMO_PRODUCTS) {
+      const row = data?.find((r) => r.slug === p.slug);
+      if (row) productIds.set(p.id, row.id);
+    }
+  }
+  const mapProduct = (id: string) => productIds.get(id);
+  const mapUser = (id: string) => userIds.get(id);
+  const mapShop = (id: string) => shopIds.get(id);
+
+  console.log("Seeding promo codes…");
+  for (const promo of DEMO_PROMO_CODES) {
+    const { error } = await supabase
+      .from("promo_codes")
+      .upsert({ code: promo.code, percent: promo.percent, active: promo.active, expires_at: promo.expiresAt }, { onConflict: "code" });
+    if (error) throw error;
+  }
+
+  console.log("Seeding reviews…");
+  {
+    const rows = DEMO_REVIEWS.flatMap((r) => {
+      const product_id = mapProduct(r.productId);
+      const user_id = mapUser(r.userId);
+      return product_id && user_id ? [{ product_id, user_id, rating: r.rating, body: r.text, created_at: r.createdAt }] : [];
+    });
+    const { error } = await supabase.from("reviews").upsert(rows, { onConflict: "product_id,user_id" });
+    if (error) throw error;
+  }
+
+  console.log("Seeding product views…");
+  {
+    const rows = DEMO_VIEWS.flatMap((v) => {
+      const product_id = mapProduct(v.productId);
+      return product_id ? [{ product_id, day: v.day, views: v.views }] : [];
+    });
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await supabase.from("product_views").upsert(rows.slice(i, i + 500), { onConflict: "product_id,day" });
+      if (error) throw error;
+    }
+  }
+
+  console.log("Seeding orders…");
+  {
+    const { data: existing } = await supabase.from("orders").select("number");
+    const have = new Set((existing ?? []).map((o) => o.number));
+    for (const order of DEMO_ORDERS) {
+      if (have.has(order.number)) continue;
+      const buyer_id = mapUser(order.buyerId);
+      const shop_id = mapShop(order.shopId);
+      if (!buyer_id || !shop_id) continue;
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({
+          number: order.number,
+          buyer_id,
+          shop_id,
+          status: order.status,
+          subtotal: order.subtotal,
+          discount: order.discount,
+          total: order.total,
+          promo_code: order.promoCode,
+          delivery: { ...order.delivery },
+          payment_method: order.paymentMethod,
+          payment_status: order.paymentStatus,
+          created_at: order.createdAt,
+          updated_at: order.updatedAt,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      const { error: itemsError } = await supabase.from("order_items").insert(
+        order.items.map((i) => ({
+          order_id: data.id,
+          product_id: i.productId ? (mapProduct(i.productId) ?? null) : null,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          image_url: i.imageUrl,
+        })),
+      );
+      if (itemsError) throw itemsError;
+    }
+  }
+
+  console.log("Seeding conversations…");
+  for (const conv of DEMO_CONVERSATIONS) {
+    const buyer_id = mapUser(conv.buyerId);
+    const shop_id = mapShop(conv.shopId);
+    if (!buyer_id || !shop_id) continue;
+    const { data, error } = await supabase
+      .from("conversations")
+      .upsert({ buyer_id, shop_id, last_message_at: conv.lastMessageAt }, { onConflict: "buyer_id,shop_id" })
+      .select("id")
+      .single();
+    if (error) throw error;
+    const { count } = await supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", data.id);
+    if ((count ?? 0) > 0) continue;
+    const rows = DEMO_MESSAGES.filter((m) => m.conversationId === conv.id).flatMap((m) => {
+      const sender_id = mapUser(m.senderId);
+      return sender_id ? [{ conversation_id: data.id, sender_id, body: m.body, created_at: m.createdAt, read_at: m.readAt }] : [];
+    });
+    const { error: msgError } = await supabase.from("messages").insert(rows);
+    if (msgError) throw msgError;
+  }
+
+  console.log(
+    `Done: ${DEMO_USERS.length} users, ${DEMO_SHOPS.length} shops, ${DEMO_PRODUCTS.length} products, ${DEMO_REVIEWS.length} reviews, ${DEMO_ORDERS.length} orders, ${DEMO_MESSAGES.length} messages.`,
+  );
 }
 
 main().catch((e) => {

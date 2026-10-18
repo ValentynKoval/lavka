@@ -8,8 +8,44 @@ import { supabaseCatalogRepository } from "./supabase/catalog";
 import { supabaseSellerRepository } from "./supabase/seller";
 import { supabaseUserDataRepository } from "./supabase/user-data";
 import type { AuthService, CatalogRepository, SellerRepository, UserDataRepository } from "./types";
+import {
+  mockAdminRepository,
+  mockChatRepository,
+  mockOrdersRepository,
+  mockReviewsRepository,
+  mockStatsRepository,
+} from "./mock/stage2";
+import {
+  supabaseAdminRepository,
+  supabaseChatRepository,
+  supabaseOrdersRepository,
+  supabaseReviewsRepository,
+  supabaseStatsRepository,
+} from "./supabase/stage2";
+import type { AdminRepository, ChatRepository, OrdersRepository, ReviewsRepository, StatsRepository } from "./types-stage2";
 
 export type { AuthService, CatalogRepository, SellerRepository, UserDataRepository } from "./types";
+export type { AdminRepository, ChatRepository, OrdersRepository, ReviewsRepository, StatsRepository } from "./types-stage2";
+
+export function getOrdersRepository(): OrdersRepository {
+  return isDemoMode() ? mockOrdersRepository : supabaseOrdersRepository;
+}
+
+export function getReviewsRepository(): ReviewsRepository {
+  return isDemoMode() ? mockReviewsRepository : supabaseReviewsRepository;
+}
+
+export function getChatRepository(): ChatRepository {
+  return isDemoMode() ? mockChatRepository : supabaseChatRepository;
+}
+
+export function getStatsRepository(): StatsRepository {
+  return isDemoMode() ? mockStatsRepository : supabaseStatsRepository;
+}
+
+export function getAdminRepository(): AdminRepository {
+  return isDemoMode() ? mockAdminRepository : supabaseAdminRepository;
+}
 
 /**
  * True when the app runs on built-in demo data instead of Supabase:

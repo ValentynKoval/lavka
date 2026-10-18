@@ -1,5 +1,6 @@
 import { DEMO_PRODUCTS, DEMO_SHOPS, DEMO_USERS, type DemoUser } from "@/data/demo";
-import type { Product, Shop } from "@/lib/types";
+import { DEMO_CONVERSATIONS, DEMO_MESSAGES, DEMO_ORDERS, DEMO_PROMO_CODES, DEMO_REVIEWS, DEMO_VIEWS } from "@/data/demo-stage2";
+import type { Conversation, Message, Order, Product, PromoCode, Review, Shop } from "@/lib/types";
 
 /**
  * In-memory state for demo mode (no Supabase keys).
@@ -12,6 +13,13 @@ export interface MockState {
   products: Product[];
   favorites: Map<string, Set<string>>;
   carts: Map<string, Map<string, number>>;
+  reviews: Review[];
+  orders: Order[];
+  promoCodes: PromoCode[];
+  conversations: Conversation[];
+  messages: Message[];
+  views: { productId: string; day: string; views: number }[];
+  orderCounter: number;
 }
 
 const KEY = "__lavkaMockState" as const;
@@ -23,6 +31,13 @@ function createState(): MockState {
     products: structuredClone(DEMO_PRODUCTS),
     favorites: new Map(),
     carts: new Map(),
+    reviews: structuredClone(DEMO_REVIEWS),
+    orders: structuredClone(DEMO_ORDERS),
+    promoCodes: structuredClone(DEMO_PROMO_CODES),
+    conversations: structuredClone(DEMO_CONVERSATIONS),
+    messages: structuredClone(DEMO_MESSAGES),
+    views: structuredClone(DEMO_VIEWS),
+    orderCounter: 1001 + DEMO_ORDERS.length,
   };
 }
 

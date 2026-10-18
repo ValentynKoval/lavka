@@ -5,9 +5,16 @@ import { persist } from "zustand/middleware";
 import { addLine, mergeCarts, removeLine, setLineQuantity, totalItems } from "@/lib/cart/cart";
 import type { CartLine } from "@/lib/types";
 
+export interface AppliedPromo {
+  code: string;
+  percent: number;
+}
+
 interface CartState {
   lines: CartLine[];
+  promo: AppliedPromo | null;
   hydrated: boolean;
+  setPromo: (promo: AppliedPromo | null) => void;
   add: (productId: string, quantity?: number, stock?: number) => void;
   setQuantity: (productId: string, quantity: number, stock?: number) => void;
   remove: (productId: string) => void;
@@ -23,7 +30,9 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       lines: [],
+      promo: null,
       hydrated: false,
+      setPromo: (promo) => set({ promo }),
       add: (productId, quantity = 1, stock) =>
         set((s) => ({ lines: addLine(s.lines, productId, quantity, stock) })),
       setQuantity: (productId, quantity, stock) =>
@@ -41,7 +50,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "lavka-cart",
-      partialize: (s) => ({ lines: s.lines }),
+      partialize: (s) => ({ lines: s.lines, promo: s.promo }),
       onRehydrateStorage: () => (state) => state?.setHydrated(),
     },
   ),

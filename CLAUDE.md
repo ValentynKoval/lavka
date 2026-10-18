@@ -35,4 +35,13 @@ Never report "done" after a partial check. On this Windows PC `next build` may n
 ## Scope
 
 Stage 1 (done): catalog, search & filters, product page, shop page, favourites, cart, auth, seller cabinet, demo data, deploy.
-Stage 2 (not started, do not build unless asked): chat, Stripe test payments, orders, reviews, admin panel, analytics, e-mails.
+Stage 2 (done 2026-10-18): checkout and orders (demo payment, no Stripe), reviews, chat with Supabase Realtime, admin panel,
+seller analytics, command palette, dark mode, OG images, sitemap/robots/JSON-LD.
+Not planned unless asked: real payments (Stripe), e-mail notifications, shipping APIs, English UI.
+
+## Stage 2 conventions
+
+- Orders are created only through the `place_order` RPC (atomic stock check + decrement). Status changes follow `NEXT_STATUSES` in `src/lib/stats/aggregate.ts`.
+- Demo stage-2 data (reviews, orders, views, chat) is generated deterministically in `src/data/demo-stage2.ts`; the seed and demo mode share it.
+- Dark mode works by overriding design tokens under `:root[data-theme="dark"]`; add new colours as tokens, not hard-coded hex, so both themes stay in sync.
+- Charts are plain SVG in `src/components/charts/charts.tsx`; no chart library.

@@ -1,21 +1,26 @@
 import { applyCatalogFilters, priceBounds, sortProducts } from "@/lib/catalog/filter";
+import { ratingSummary } from "@/lib/stats/aggregate";
 import type { CatalogFilters, Product, Shop } from "@/lib/types";
 import type { CatalogRepository } from "../types";
 import { getMockState } from "./store";
 
 function withShop(product: Product, shops: Shop[]): Product {
   const shop = shops.find((s) => s.id === product.shopId);
-  return shop
-    ? {
-        ...product,
-        shop: { id: shop.id, slug: shop.slug, name: shop.name, regionSlug: shop.regionSlug, city: shop.city, avatarUrl: shop.avatarUrl },
-      }
-    : product;
+  const reviews = getMockState().reviews.filter((r) => r.productId === product.id);
+  return {
+    ...product,
+    shop: shop
+      ? { id: shop.id, slug: shop.slug, name: shop.name, regionSlug: shop.regionSlug, city: shop.city, avatarUrl: shop.avatarUrl }
+      : undefined,
+    rating: reviews.length > 0 ? ratingSummary(reviews) : undefined,
+  };
 }
 
+/** Products of visible (non-hidden) shops, decorated with shop reference and rating. */
 function allProducts(): Product[] {
   const state = getMockState();
-  return state.products.map((p) => withShop(p, state.shops));
+  const hidden = new Set(state.shops.filter((s) => s.isHidden).map((s) => s.id));
+  return state.products.filter((p) => !hidden.has(p.shopId)).map((p) => withShop(p, state.shops));
 }
 
 function activeProducts(): Product[] {
@@ -50,7 +55,7 @@ export const mockCatalogRepository: CatalogRepository = {
   },
   async listShops() {
     const state = getMockState();
-    return state.shops.map((shop) => ({
+    return state.shops.filter((shop) => !shop.isHidden).map((shop) => ({
       ...shop,
       productCount: state.products.filter((p) => p.shopId === shop.id && p.status === "active").length,
     }));

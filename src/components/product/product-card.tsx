@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
 import { FavoriteButton } from "./favorite-button";
+import { RatingStars } from "@/components/ui/rating-stars";
 
 interface ProductCardProps {
   product: Product;
@@ -87,7 +88,10 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
             )}
           </Link>
         )}
-        <Price price={product.price} compareAtPrice={product.compareAtPrice} className="mt-0.5" />
+        <div className="mt-0.5 flex items-center justify-between gap-2">
+          <Price price={product.price} compareAtPrice={product.compareAtPrice} />
+          {product.rating && <RatingStars value={product.rating.average} count={product.rating.count} size="sm" />}
+        </div>
       </div>
     </article>
   );

@@ -6,7 +6,7 @@ import { mapProduct, mapShop, PRODUCT_SELECT, type ProductRowWithRelations } fro
 
 async function fetchActiveProducts(): Promise<Product[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("status", "active");
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("shops.is_hidden", false).eq("status", "active");
   if (error) throw new Error(error.message);
   return (data as unknown as ProductRowWithRelations[]).map(mapProduct);
 }
@@ -16,7 +16,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     // Structured filters run in Postgres; free-text search and region (a shop attribute)
     // are refined in memory on the already narrowed set.
-    let query = supabase.from("products").select(PRODUCT_SELECT).eq("status", "active");
+    let query = supabase.from("products").select(PRODUCT_SELECT).eq("shops.is_hidden", false).eq("status", "active");
     if (filters.category) query = query.eq("category_slug", filters.category);
     if (filters.materials?.length) query = query.overlaps("materials", filters.materials);
     if (filters.priceMin !== undefined) query = query.gte("price", filters.priceMin);
@@ -32,7 +32,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
-      .select(PRODUCT_SELECT)
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
       .eq("slug", slug)
       .eq("status", "active")
       .maybeSingle();
@@ -42,7 +42,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
   async getProductsByIds(ids) {
     if (ids.length === 0) return [];
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).in("id", ids).eq("status", "active");
+    const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("shops.is_hidden", false).in("id", ids).eq("status", "active");
     if (error) throw new Error(error.message);
     return (data as unknown as ProductRowWithRelations[]).map(mapProduct);
   },
@@ -50,7 +50,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
-      .select(PRODUCT_SELECT)
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
       .eq("status", "active")
       .eq("is_featured", true)
       .order("created_at", { ascending: false })
@@ -62,7 +62,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
-      .select(PRODUCT_SELECT)
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -73,7 +73,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
-      .select(PRODUCT_SELECT)
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
       .eq("status", "active")
       .neq("id", product.id)
       .or(`category_slug.eq.${product.categorySlug},shop_id.eq.${product.shopId}`)
@@ -94,6 +94,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const { data, error } = await supabase
       .from("shops")
       .select("*, products(count)")
+      .eq("is_hidden", false)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     type Row = Parameters<typeof mapShop>[0] & { products: { count: number }[] };
@@ -101,7 +102,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
   },
   async getShopBySlug(slug) {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("shops").select("*, products(count)").eq("slug", slug).maybeSingle();
+    const { data, error } = await supabase.from("shops").select("*, products(count)").eq("slug", slug).eq("is_hidden", false).maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
     type Row = Parameters<typeof mapShop>[0] & { products: { count: number }[] };
@@ -112,7 +113,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
-      .select(PRODUCT_SELECT)
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
       .eq("shop_id", shopId)
       .eq("status", "active")
       .order("created_at", { ascending: false });

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLink, LayoutDashboard, Package, PlusCircle, Settings, Store } from "lucide-react";
+import { BarChart3, ExternalLink, LayoutDashboard, MessageCircle, Package, PlusCircle, Receipt, Settings, Store } from "lucide-react";
 import type { Shop } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,9 @@ export function SellerNav({ shop }: { shop: Shop | null }) {
         { href: "/seller", label: "Огляд", icon: LayoutDashboard, exact: true },
         { href: "/seller/products", label: "Мої товари", icon: Package },
         { href: "/seller/products/new", label: "Додати товар", icon: PlusCircle, exact: true },
+        { href: "/seller/orders", label: "Замовлення", icon: Receipt },
+        { href: "/seller/analytics", label: "Аналітика", icon: BarChart3 },
+        { href: "/messages", label: "Повідомлення", icon: MessageCircle },
         { href: "/seller/shop", label: "Налаштування лавки", icon: Settings },
       ]
     : [{ href: "/seller/onboarding", label: "Відкрити лавку", icon: Store }];
