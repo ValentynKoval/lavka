@@ -1,3 +1,4 @@
+import { AppError } from "@/lib/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ConversationRow, MessageRow, OrderItemRow, OrderRow, ProfileRow, ReviewRow } from "@/lib/supabase/database.types";
 import { computeAdminStats, computeShopStats, ratingSummary, canTransition } from "@/lib/stats/aggregate";
@@ -45,26 +46,37 @@ function mapOrder(row: OrderRowFull): Order {
   };
 }
 
-async function fetchOrders(filter: (q: ReturnType<Awaited<ReturnType<typeof createSupabaseServerClient>>["from"]>) => unknown): Promise<Order[]> {
+type OrderQuery = { eq: (c: string, v: string) => OrderQuery; in: (c: string, v: string[]) => OrderQuery };
+
+async function fetchOrders(filter: (q: OrderQuery) => unknown): Promise<Order[]> {
   const supabase = await createSupabaseServerClient();
   const query = supabase.from("orders").select(ORDER_SELECT).order("created_at", { ascending: false });
-  filter(query as never);
+  filter(query as unknown as OrderQuery);
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return (data as unknown as OrderRowFull[]).map(mapOrder);
 }
 
+/** Maps errors raised by the place_order RPC to dictionary keys. */
+function orderError(message: string): AppError {
+  const stock = message.match(/Not enough stock for (.+)$/);
+  if (stock) return new AppError("errors.notEnoughStock", { title: stock[1] });
+  if (message.includes("not available")) return new AppError("errors.productUnavailable");
+  if (message.includes("Promo code")) return new AppError("errors.promoInvalid");
+  if (message.includes("Not authenticated")) return new AppError("errors.loginRequired");
+  return new AppError("errors.orderFailed");
+}
+
 export const supabaseOrdersRepository: OrdersRepository = {
   async placeOrders(_buyerId, input) {
     const supabase = await createSupabaseServerClient();
-    // Resolve shop for every line, then call the atomic RPC once per shop.
     const ids = input.lines.map((l) => l.productId);
     const { data: products, error } = await supabase.from("products").select("id, shop_id").in("id", ids);
     if (error) throw new Error(error.message);
     const byShop = new Map<string, CartLine[]>();
     for (const line of input.lines) {
       const shopId = products?.find((p) => p.id === line.productId)?.shop_id;
-      if (!shopId) throw new Error("Один із товарів більше недоступний.");
+      if (!shopId) throw new AppError("errors.productUnavailable");
       byShop.set(shopId, [...(byShop.get(shopId) ?? []), line]);
     }
     const created: string[] = [];
@@ -76,31 +88,31 @@ export const supabaseOrdersRepository: OrdersRepository = {
         p_payment_method: input.paymentMethod,
         p_promo_code: input.promoCode,
       });
-      if (rpcError) throw new Error(translateOrderError(rpcError.message));
+      if (rpcError) throw orderError(rpcError.message);
       created.push(data as string);
     }
-    return fetchOrders((q) => (q as unknown as { in: (c: string, v: string[]) => unknown }).in("id", created));
+    return fetchOrders((q) => q.in("id", created));
   },
   async listBuyerOrders(buyerId) {
-    return fetchOrders((q) => (q as unknown as { eq: (c: string, v: string) => unknown }).eq("buyer_id", buyerId));
+    return fetchOrders((q) => q.eq("buyer_id", buyerId));
   },
   async getBuyerOrder(buyerId, orderId) {
-    const list = await fetchOrders((q) => (q as unknown as { eq: (c: string, v: string) => { eq: (c: string, v: string) => unknown } }).eq("buyer_id", buyerId).eq("id", orderId));
+    const list = await fetchOrders((q) => q.eq("buyer_id", buyerId).eq("id", orderId));
     return list[0] ?? null;
   },
   async listShopOrders(shopId) {
-    return fetchOrders((q) => (q as unknown as { eq: (c: string, v: string) => unknown }).eq("shop_id", shopId));
+    return fetchOrders((q) => q.eq("shop_id", shopId));
   },
   async getShopOrder(shopId, orderId) {
-    const list = await fetchOrders((q) => (q as unknown as { eq: (c: string, v: string) => { eq: (c: string, v: string) => unknown } }).eq("shop_id", shopId).eq("id", orderId));
+    const list = await fetchOrders((q) => q.eq("shop_id", shopId).eq("id", orderId));
     return list[0] ?? null;
   },
   async updateStatus(shopId, orderId, status) {
     const supabase = await createSupabaseServerClient();
     const { data: current, error: readError } = await supabase.from("orders").select("status, payment_method, payment_status").eq("id", orderId).eq("shop_id", shopId).maybeSingle();
     if (readError) throw new Error(readError.message);
-    if (!current) throw new Error("Замовлення не знайдено");
-    if (!canTransition(current.status, status)) throw new Error("Такий перехід статусу неможливий");
+    if (!current) throw new AppError("orders.errors.notFound");
+    if (!canTransition(current.status, status)) throw new AppError("orders.errors.badTransition");
     const paymentStatus =
       status === "cancelled"
         ? current.payment_status === "paid"
@@ -121,14 +133,6 @@ export const supabaseOrdersRepository: OrdersRepository = {
   },
 };
 
-function translateOrderError(message: string): string {
-  if (message.includes("Not enough stock")) return "Недостатньо товару на складі: " + message.replace("Not enough stock for ", "");
-  if (message.includes("not available")) return "Один із товарів більше недоступний.";
-  if (message.includes("Promo code")) return "Промокод недійсний.";
-  if (message.includes("Not authenticated")) return "Увійдіть, щоб оформити замовлення.";
-  return "Не вдалося оформити замовлення. Спробуйте ще раз.";
-}
-
 type ReviewRowFull = ReviewRow & { profiles?: Pick<ProfileRow, "full_name"> | null };
 
 function mapReview(row: ReviewRowFull): Review {
@@ -136,7 +140,7 @@ function mapReview(row: ReviewRowFull): Review {
     id: row.id,
     productId: row.product_id,
     userId: row.user_id,
-    authorName: row.profiles?.full_name || "Покупець",
+    authorName: row.profiles?.full_name || "",
     rating: row.rating,
     text: row.body,
     createdAt: row.created_at,
@@ -257,7 +261,7 @@ export const supabaseChatRepository: ChatRepository = {
   async sendMessage(conversationId, senderId, body) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: senderId, body: body.trim() }).select("*").single();
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError("chat.errors.notFound");
     return mapMessage(data);
   },
   async markRead(conversationId, readerId) {
@@ -302,7 +306,7 @@ export const supabaseStatsRepository: StatsRepository = {
     ]);
     if (counts.error) throw new Error(counts.error.message);
     const c = (counts.data as unknown as { users: number; sellers: number; shops: number; products: number; active_products: number; orders: number; revenue: number; reviews: number; messages: number }[])[0];
-    if (!c) throw new Error("Немає доступу адміністратора");
+    if (!c) throw new AppError("errors.noAdminAccess");
     return computeAdminStats(
       {
         users: Number(c.users),

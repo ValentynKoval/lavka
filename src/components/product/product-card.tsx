@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { regionBySlug } from "@/data/taxonomy";
+import { getTaxonomy } from "@/data/taxonomy-i18n";
+import { useT } from "@/i18n/client";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -16,57 +19,26 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority, className }: ProductCardProps) {
+  const { t, locale } = useT();
   const cover = product.images[0];
   const hover = product.images[1];
   const soldOut = product.stock <= 0;
-  const discount =
-    product.compareAtPrice && product.compareAtPrice > product.price
-      ? Math.round((1 - product.price / product.compareAtPrice) * 100)
-      : 0;
-  const region = product.shop ? regionBySlug(product.shop.regionSlug)?.name : undefined;
+  const discount = product.compareAtPrice && product.compareAtPrice > product.price ? Math.round((1 - product.price / product.compareAtPrice) * 100) : 0;
+  const region = product.shop ? getTaxonomy(locale).regionBySlug(product.shop.regionSlug)?.name : undefined;
 
   return (
     <article className={cn("group relative flex flex-col", className)}>
-      <Link
-        href={`/product/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-linen-200 shadow-card transition-shadow duration-300 group-hover:shadow-card-hover"
-      >
+      <Link href={`/product/${product.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-linen-200 shadow-card transition-shadow duration-300 group-hover:shadow-card-hover">
         {cover ? (
           <>
-            <Image
-              src={cover.url}
-              alt={cover.alt}
-              fill
-              priority={priority}
-              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-              className={cn(
-                "object-cover transition-all duration-500 group-hover:scale-[1.03]",
-                hover && "group-hover:opacity-0",
-                soldOut && "saturate-50",
-              )}
-            />
-            {hover && (
-              <Image
-                src={hover.url}
-                alt=""
-                fill
-                sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-                className="object-cover opacity-0 transition-all duration-500 group-hover:scale-[1.03] group-hover:opacity-100"
-                aria-hidden
-              />
-            )}
+            <Image src={cover.url} alt={cover.alt} fill priority={priority} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw" className={cn("object-cover transition-all duration-500 group-hover:scale-[1.03]", hover && "group-hover:opacity-0", soldOut && "saturate-50")} />
+            {hover && <Image src={hover.url} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw" className="object-cover opacity-0 transition-all duration-500 group-hover:scale-[1.03] group-hover:opacity-100" aria-hidden />}
           </>
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-ink-300">Без фото</div>
+          <div className="flex h-full items-center justify-center text-sm text-ink-300">{t("product.noPhoto")}</div>
         )}
         <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-          {soldOut ? (
-            <Badge tone="ink">Немає в наявності</Badge>
-          ) : discount > 0 ? (
-            <Badge tone="clay">−{discount}%</Badge>
-          ) : product.isFeatured ? (
-            <Badge tone="sand">Вибір редакції</Badge>
-          ) : null}
+          {soldOut ? <Badge tone="ink">{t("product.soldOut")}</Badge> : discount > 0 ? <Badge tone="clay">−{discount}%</Badge> : product.isFeatured ? <Badge tone="sand">{t("product.editorsChoice")}</Badge> : null}
         </div>
       </Link>
       <div className="absolute right-3 top-3">

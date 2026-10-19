@@ -1,11 +1,12 @@
+"use client";
+
+import { useT } from "@/i18n/client";
 import type { DailyPoint } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /*
  * Dependency-free SVG charts. Colours come from the design tokens so they follow dark mode.
  */
-
-const dayLabel = new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short" });
 
 interface AreaChartProps {
   data: DailyPoint[];
@@ -15,7 +16,14 @@ interface AreaChartProps {
   className?: string;
 }
 
+function useDayLabel() {
+  const { formatDate } = useT();
+  return (day: string) => formatDate(day, { day: "numeric", month: "short" });
+}
+
 export function AreaChart({ data, color = "var(--color-clay-500)", height = 160, formatValue = (v) => String(v), className }: AreaChartProps) {
+  const { t } = useT();
+  const dayLabel = useDayLabel();
   const width = 600;
   const pad = { top: 12, right: 8, bottom: 26, left: 8 };
   const max = Math.max(1, ...data.map((d) => d.value));
@@ -29,7 +37,7 @@ export function AreaChart({ data, color = "var(--color-clay-500)", height = 160,
   const labelEvery = Math.ceil(data.length / 6);
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className={cn("h-auto w-full", className)} role="img" aria-label="Графік">
+    <svg viewBox={`0 0 ${width} ${height}`} className={cn("h-auto w-full", className)} role="img" aria-label={t("charts.chart")}>
       <defs>
         <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.35" />
@@ -44,10 +52,10 @@ export function AreaChart({ data, color = "var(--color-clay-500)", height = 160,
       {points.map((p, i) => (
         <g key={p.day}>
           <circle cx={p.x} cy={p.y} r="3" fill={color} className="opacity-0 hover:opacity-100" />
-          <title>{`${dayLabel.format(new Date(p.day))}: ${formatValue(p.value)}`}</title>
+          <title>{`${dayLabel(p.day)}: ${formatValue(p.value)}`}</title>
           {i % labelEvery === 0 && (
             <text x={p.x} y={height - 8} textAnchor="middle" fontSize="11" fill="var(--color-ink-500)">
-              {dayLabel.format(new Date(p.day))}
+              {dayLabel(p.day)}
             </text>
           )}
         </g>
@@ -65,6 +73,8 @@ interface BarChartProps {
 }
 
 export function BarChart({ data, color = "var(--color-moss-500)", height = 160, formatValue = (v) => String(v), className }: BarChartProps) {
+  const { t } = useT();
+  const dayLabel = useDayLabel();
   const width = 600;
   const pad = { top: 12, right: 8, bottom: 26, left: 8 };
   const max = Math.max(1, ...data.map((d) => d.value));
@@ -74,18 +84,18 @@ export function BarChart({ data, color = "var(--color-moss-500)", height = 160, 
   const barW = Math.max(3, slot * 0.6);
   const labelEvery = Math.ceil(data.length / 6);
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className={cn("h-auto w-full", className)} role="img" aria-label="Стовпчикова діаграма">
+    <svg viewBox={`0 0 ${width} ${height}`} className={cn("h-auto w-full", className)} role="img" aria-label={t("charts.bars")}>
       {data.map((d, i) => {
         const h = (d.value / max) * innerH;
         const x = pad.left + i * slot + (slot - barW) / 2;
         return (
           <g key={d.day}>
             <rect x={x} y={pad.top + innerH - h} width={barW} height={h} rx="3" fill={color} opacity={d.value === 0 ? 0.15 : 0.9}>
-              <title>{`${dayLabel.format(new Date(d.day))}: ${formatValue(d.value)}`}</title>
+              <title>{`${dayLabel(d.day)}: ${formatValue(d.value)}`}</title>
             </rect>
             {i % labelEvery === 0 && (
               <text x={x + barW / 2} y={height - 8} textAnchor="middle" fontSize="11" fill="var(--color-ink-500)">
-                {dayLabel.format(new Date(d.day))}
+                {dayLabel(d.day)}
               </text>
             )}
           </g>
@@ -109,6 +119,7 @@ export function Sparkline({ data, color = "var(--color-clay-500)", className }: 
 }
 
 export function DonutChart({ segments, size = 140 }: { segments: { label: string; value: number; color: string }[]; size?: number }) {
+  const { t } = useT();
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
   const r = 50;
   const c = 2 * Math.PI * r;
@@ -117,7 +128,7 @@ export function DonutChart({ segments, size = 140 }: { segments: { label: string
     return [...acc, { ...s, len: (s.value / total) * c, offset }];
   }, []);
   return (
-    <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label="Кругова діаграма">
+    <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label={t("charts.donut")}>
       <circle cx="60" cy="60" r={r} fill="none" stroke="var(--color-linen-200)" strokeWidth="14" />
       {arcs.map((s) => (
         <circle key={s.label} cx="60" cy="60" r={r} fill="none" stroke={s.color} strokeWidth="14" strokeDasharray={`${s.len} ${c - s.len}`} strokeDashoffset={-s.offset} transform="rotate(-90 60 60)">

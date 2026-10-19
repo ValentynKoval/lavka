@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { getTranslator } from "@/i18n/server";
 import { cn } from "@/lib/utils";
 
 interface SectionHeadingProps {
@@ -12,15 +13,8 @@ interface SectionHeadingProps {
   className?: string;
 }
 
-export function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  href,
-  linkLabel = "Дивитися все",
-  align = "left",
-  className,
-}: SectionHeadingProps) {
+export async function SectionHeading({ eyebrow, title, description, href, linkLabel, align = "left", className }: SectionHeadingProps) {
+  const { t } = await getTranslator();
   return (
     <div
       className={cn(
@@ -30,18 +24,13 @@ export function SectionHeading({
       )}
     >
       <div className="max-w-2xl">
-        {eyebrow && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">{eyebrow}</p>
-        )}
+        {eyebrow && <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">{eyebrow}</p>}
         <h2 className="text-3xl font-semibold text-ink-900 sm:text-4xl">{title}</h2>
         {description && <p className="mt-3 text-base leading-relaxed text-ink-500">{description}</p>}
       </div>
       {href && (
-        <Link
-          href={href}
-          className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline-offset-4 hover:text-clay-600 hover:underline"
-        >
-          {linkLabel}
+        <Link href={href} className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline-offset-4 hover:text-clay-600 hover:underline">
+          {linkLabel ?? t("common.viewAll")}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Link>
       )}

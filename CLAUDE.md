@@ -5,7 +5,10 @@ Owner: Valentyn (GitHub `ValentynKoval`, Vercel `valentyngolf`). Claude writes t
 
 ## Languages
 
-- **UI text: Ukrainian only.** Every user-facing string (pages, forms, errors, toasts, metadata) is in Ukrainian.
+- **UI text lives in dictionaries** (`src/i18n/messages/uk.ts` is the source; `en.ts` and `ru.ts` must match its shape — TypeScript enforces it).
+  Never hard-code a user-facing string in a component: use `getTranslator()` on the server or `useT()` on the client,
+  plurals via `tp()`, dates via `formatDate()`. Repositories throw `AppError("dict.key")`; actions translate with `localizeError()`.
+  Taxonomy names come from `getTaxonomy(locale)`. Ukrainian stays the default language; product content is not translated.
 - **Code, comments, README, commit messages: English.**
 - **Reports to Valentyn: Russian.**
 
@@ -37,7 +40,8 @@ Never report "done" after a partial check. On this Windows PC `next build` may n
 Stage 1 (done): catalog, search & filters, product page, shop page, favourites, cart, auth, seller cabinet, demo data, deploy.
 Stage 2 (done 2026-10-18): checkout and orders (demo payment, no Stripe), reviews, chat with Supabase Realtime, admin panel,
 seller analytics, command palette, dark mode, OG images, sitemap/robots/JSON-LD.
-Not planned unless asked: real payments (Stripe), e-mail notifications, shipping APIs, English UI.
+Stage 3 (done 2026-10-18): UI in three languages (UA/EN/RU) with a cookie-based locale switcher.
+Not planned unless asked: real payments (Stripe), e-mail notifications, shipping APIs, translated product content.
 
 ## Stage 2 conventions
 

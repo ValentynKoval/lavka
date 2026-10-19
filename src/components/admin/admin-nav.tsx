@@ -3,20 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, Package, Receipt, Store, Users } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
-const items = [
-  { href: "/admin", label: "Огляд", icon: BarChart3, exact: true },
-  { href: "/admin/products", label: "Товари", icon: Package },
-  { href: "/admin/shops", label: "Лавки", icon: Store },
-  { href: "/admin/orders", label: "Замовлення", icon: Receipt },
-  { href: "/admin/users", label: "Користувачі", icon: Users },
-];
-
 export function AdminNav() {
+  const { t } = useT();
   const pathname = usePathname();
+  const items = [
+    { href: "/admin", label: t("admin.nav.overview"), icon: BarChart3, exact: true },
+    { href: "/admin/products", label: t("admin.nav.products"), icon: Package },
+    { href: "/admin/shops", label: t("admin.nav.shops"), icon: Store },
+    { href: "/admin/orders", label: t("admin.nav.orders"), icon: Receipt },
+    { href: "/admin/users", label: t("admin.nav.users"), icon: Users },
+  ];
   return (
-    <nav className="flex gap-1 overflow-x-auto scrollbar-none lg:sticky lg:top-32 lg:flex-col lg:self-start" aria-label="Адмін-панель">
+    <nav className="flex gap-1 overflow-x-auto scrollbar-none lg:sticky lg:top-32 lg:flex-col lg:self-start" aria-label={t("nav.adminPanel")}>
       {items.map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
         return (

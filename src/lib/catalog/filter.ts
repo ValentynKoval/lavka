@@ -2,12 +2,15 @@ import type { CatalogFilters, Product, SortOption } from "@/lib/types";
 
 export const PAGE_SIZE = 12;
 
-export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "popular", label: "Популярні" },
-  { value: "newest", label: "Новинки" },
-  { value: "price-asc", label: "Спочатку дешевші" },
-  { value: "price-desc", label: "Спочатку дорожчі" },
-];
+export const SORT_VALUES: SortOption[] = ["popular", "newest", "price-asc", "price-desc"];
+
+/** Dictionary keys for sort labels (resolved by the UI in the visitor's language). */
+export const SORT_LABEL_KEYS: Record<SortOption, string> = {
+  popular: "catalog.sortPopular",
+  newest: "catalog.sortNewest",
+  "price-asc": "catalog.sortPriceAsc",
+  "price-desc": "catalog.sortPriceDesc",
+};
 
 function normalize(text: string): string {
   return text

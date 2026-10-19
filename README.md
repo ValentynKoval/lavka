@@ -1,6 +1,6 @@
 # Lavka — handmade goods marketplace
 
-> A portfolio project: a niche marketplace where Ukrainian makers sell ceramics, jewelry, textiles, woodwork, candles, art and leather goods. UI in Ukrainian, code in English.
+> A portfolio project: a niche marketplace where Ukrainian makers sell ceramics, jewelry, textiles, woodwork, candles, art and leather goods. UI in Ukrainian, English and Russian; code in English.
 
 **Live demo:** https://lavka-green.vercel.app · **Repository:** https://github.com/ValentynKoval/lavka
 
@@ -21,7 +21,8 @@
 | Auth | E-mail + password sign-up / sign-in (Supabase Auth), roles buyer / seller / admin with RLS-enforced permissions. |
 | Seller cabinet | Shop onboarding, dashboard, product CRUD with multi-image upload, inline stock editing, order management with status transitions, analytics (views, revenue, conversion, top products, status donut) on dependency-free SVG charts. |
 | Admin panel | Platform stats and charts, product moderation, hiding shops, role management through the service role. |
-| UX extras | ⌘K command palette search, dark mode (token-based, no flash), image zoom on hover, Open Graph images generated per product, sitemap, robots, PWA manifest, Schema.org JSON-LD. |
+| i18n | Three UI languages (UA default, EN, RU) with a typed dictionary, Slavic plural rules, localized taxonomy, dates and metadata; language detected from Accept-Language and remembered in a cookie; errors travel as dictionary keys so server actions answer in the visitor's language. Product content stays in the maker's language. |
+| UX extras | ⌘K / Ctrl+K command palette (layout-independent), dark mode (token-based, no flash), image zoom on hover, Open Graph images generated per product, sitemap, robots, PWA manifest, Schema.org JSON-LD. |
 | Data | Postgres schema with RLS policies, triggers, RPCs and a storage bucket; five migrations in the repo; deterministic seed with 10 shops, 69 products, 126 reviews, 36 orders and chat history. |
 | Demo mode | Without Supabase keys the app runs on the same data through an in-memory repository layer, so the UI works anywhere. |
 
@@ -52,7 +53,8 @@ Not included (out of scope for a portfolio): real payments, e-mail notifications
 src/
   app/            routes (home, catalog, product, shop, shops, favorites, cart, checkout, orders, messages, login, register, seller/*, admin/*)
   components/     ui primitives, layout, product, catalog, cart, auth, seller, home sections
-  data/           taxonomy (categories, materials, regions) and demo dataset
+  data/           taxonomy (categories, materials, regions, localized names) and demo dataset
+  i18n/           locales config, uk/en/ru dictionaries, server & client translators, locale cookie action
   lib/
     catalog/      pure filter / sort / pagination / URL-param logic (tested)
     cart/         pure cart math (tested)

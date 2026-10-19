@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
-import { CATEGORIES, MATERIALS, REGIONS } from "@/data/taxonomy";
+import { getTaxonomy } from "@/data/taxonomy-i18n";
+import { useT } from "@/i18n/client";
 import type { CatalogFilters as Filters } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,8 @@ function FilterGroup({ title, children, defaultOpen = true }: { title: string; c
 }
 
 export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersProps) {
+  const { t, locale } = useT();
+  const { categories, materials, regions } = getTaxonomy(locale);
   const { navigate, pending } = useCatalogNavigation();
   const [open, setOpen] = useState(false);
   const priceFromUrl = {
@@ -36,7 +39,6 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
   };
   const [priceMin, setPriceMin] = useState(priceFromUrl.min);
   const [priceMax, setPriceMax] = useState(priceFromUrl.max);
-  // Reset the inputs when the URL changes (derived state, no effect needed).
   const [syncedPrice, setSyncedPrice] = useState(priceFromUrl);
   if (syncedPrice.min !== priceFromUrl.min || syncedPrice.max !== priceFromUrl.max) {
     setSyncedPrice(priceFromUrl);
@@ -66,19 +68,16 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
 
   const panel = (
     <div className={cn("transition-opacity", pending && "opacity-60")}>
-      <FilterGroup title="Категорія">
+      <FilterGroup title={t("catalog.filterCategory")}>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => {
+          {categories.map((c) => {
             const active = filters.category === c.slug;
             return (
               <button
                 key={c.slug}
                 type="button"
                 onClick={() => navigate({ ...filters, category: active ? undefined : c.slug })}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                  active ? "border-ink-900 bg-ink-900 text-linen-50" : "border-ink-900/15 bg-white text-ink-700 hover:border-ink-900/40",
-                )}
+                className={cn("rounded-full border px-3 py-1.5 text-xs font-semibold transition", active ? "border-ink-900 bg-ink-900 text-linen-50" : "border-ink-900/15 bg-white text-ink-700 hover:border-ink-900/40")}
                 aria-pressed={active}
               >
                 {c.name}
@@ -88,71 +87,34 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
         </div>
       </FilterGroup>
 
-      <FilterGroup title="Ціна, ₴">
+      <FilterGroup title={t("catalog.filterPrice")}>
         <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            placeholder={String(Math.floor(bounds.min / 100))}
-            value={priceMin}
-            onChange={(e) => setPriceMin(e.target.value)}
-            onBlur={applyPrice}
-            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
-            aria-label="Ціна від"
-            className="h-10"
-          />
+          <Input type="number" inputMode="numeric" min={0} placeholder={String(Math.floor(bounds.min / 100))} value={priceMin} onChange={(e) => setPriceMin(e.target.value)} onBlur={applyPrice} onKeyDown={(e) => e.key === "Enter" && applyPrice()} aria-label={t("catalog.priceFrom")} className="h-10" />
           <span className="text-ink-300">—</span>
-          <Input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            placeholder={String(Math.ceil(bounds.max / 100))}
-            value={priceMax}
-            onChange={(e) => setPriceMax(e.target.value)}
-            onBlur={applyPrice}
-            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
-            aria-label="Ціна до"
-            className="h-10"
-          />
+          <Input type="number" inputMode="numeric" min={0} placeholder={String(Math.ceil(bounds.max / 100))} value={priceMax} onChange={(e) => setPriceMax(e.target.value)} onBlur={applyPrice} onKeyDown={(e) => e.key === "Enter" && applyPrice()} aria-label={t("catalog.priceTo")} className="h-10" />
         </div>
-        <Checkbox
-          label="Тільки в наявності"
-          checked={Boolean(filters.inStock)}
-          onChange={(e) => navigate({ ...filters, inStock: e.target.checked })}
-          className="pt-1"
-        />
+        <Checkbox label={t("catalog.inStockOnly")} checked={Boolean(filters.inStock)} onChange={(e) => navigate({ ...filters, inStock: e.target.checked })} className="pt-1" />
       </FilterGroup>
 
-      <FilterGroup title="Матеріал">
+      <FilterGroup title={t("catalog.filterMaterial")}>
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-1">
-          {MATERIALS.map((m) => (
-            <Checkbox
-              key={m.slug}
-              label={m.name}
-              checked={filters.materials?.includes(m.slug) ?? false}
-              onChange={() => navigate({ ...filters, materials: toggleIn(filters.materials, m.slug) })}
-            />
+          {materials.map((m) => (
+            <Checkbox key={m.slug} label={m.name} checked={filters.materials?.includes(m.slug) ?? false} onChange={() => navigate({ ...filters, materials: toggleIn(filters.materials, m.slug) })} />
           ))}
         </div>
       </FilterGroup>
 
-      <FilterGroup title="Регіон майстра" defaultOpen={false}>
+      <FilterGroup title={t("catalog.filterRegion")} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-1">
-          {REGIONS.map((r) => (
-            <Checkbox
-              key={r.slug}
-              label={r.name}
-              checked={filters.regions?.includes(r.slug) ?? false}
-              onChange={() => navigate({ ...filters, regions: toggleIn(filters.regions, r.slug) })}
-            />
+          {regions.map((r) => (
+            <Checkbox key={r.slug} label={r.name} checked={filters.regions?.includes(r.slug) ?? false} onChange={() => navigate({ ...filters, regions: toggleIn(filters.regions, r.slug) })} />
           ))}
         </div>
       </FilterGroup>
 
       {activeCount > 0 && (
         <Button variant="ghost" size="sm" className="mt-4 w-full" onClick={() => navigate({ query: filters.query, sort: filters.sort })}>
-          <X className="h-4 w-4" /> Скинути фільтри ({activeCount})
+          <X className="h-4 w-4" /> {t("catalog.resetFilters", { n: activeCount })}
         </Button>
       )}
     </div>
@@ -162,7 +124,7 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
     <>
       <div className="lg:hidden">
         <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-          <SlidersHorizontal className="h-4 w-4" /> Фільтри{activeCount > 0 ? ` · ${activeCount}` : ""}
+          <SlidersHorizontal className="h-4 w-4" /> {t("catalog.filters")}{activeCount > 0 ? ` · ${activeCount}` : ""}
         </Button>
       </div>
       {open && (
@@ -170,16 +132,14 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
           <div className="absolute inset-0 bg-ink-900/40" onClick={() => setOpen(false)} />
           <div className="relative ml-auto flex h-full w-[88%] max-w-sm flex-col bg-linen-50 shadow-float">
             <div className="flex items-center justify-between border-b border-ink-900/10 px-5 py-4">
-              <h2 className="font-sans text-lg font-bold">Фільтри</h2>
-              <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-ink-900/5" aria-label="Закрити">
+              <h2 className="font-sans text-lg font-bold">{t("catalog.filters")}</h2>
+              <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-ink-900/5" aria-label={t("common.close")}>
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-5">{panel}</div>
             <div className="border-t border-ink-900/10 p-5">
-              <Button className="w-full" onClick={() => setOpen(false)}>
-                Показати результати
-              </Button>
+              <Button className="w-full" onClick={() => setOpen(false)}>{t("catalog.showResults")}</Button>
             </div>
           </div>
         </div>

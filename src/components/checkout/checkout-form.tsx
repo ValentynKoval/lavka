@@ -4,12 +4,13 @@ import { useActionState, useEffect, useMemo, useState, useTransition } from "rea
 import Image from "next/image";
 import Link from "next/link";
 import { BadgePercent, CreditCard, Lock, Wallet } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { getProductsByIdsAction } from "@/lib/catalog/actions";
 import { placeOrderAction, validatePromoAction, type CheckoutState } from "@/lib/orders/actions";
 import { computeCheckout } from "@/lib/orders/checkout";
 import { useCartStore } from "@/lib/stores/cart-store";
 import type { CartLineDetailed, PaymentMethod, Product } from "@/lib/types";
-import { cn, formatPrice, plural } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input, Textarea } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { toast } from "@/components/ui/toaster";
 const initial: CheckoutState = {};
 
 export function CheckoutForm({ userName }: { userName: string }) {
+  const { t, tp } = useT();
   const lines = useCartStore((s) => s.lines);
   const hydrated = useCartStore((s) => s.hydrated);
   const promo = useCartStore((s) => s.promo);
@@ -60,7 +62,7 @@ export function CheckoutForm({ userName }: { userName: string }) {
         setPromo(null);
       } else {
         setPromo(result);
-        toast.success(`Промокод ${result.code} застосовано: −${result.percent}%`);
+        toast.success(t("cart.promoSuccess", { code: result.code, percent: result.percent }));
       }
     });
 
@@ -74,14 +76,13 @@ export function CheckoutForm({ userName }: { userName: string }) {
   }
 
   if (detailed.length === 0) {
-    return (
-      <EmptyState
-        title="Нема що оформлювати"
-        description="Кошик порожній або товари закінчилися. Поверніться до каталогу."
-        action={<Button href="/catalog">До каталогу</Button>}
-      />
-    );
+    return <EmptyState title={t("checkout.emptyTitle")} description={t("checkout.emptyText")} action={<Button href="/catalog">{t("common.toCatalog")}</Button>} />;
   }
+
+  const options = [
+    { value: "card_demo" as const, icon: CreditCard, title: t("checkout.payCard"), text: t("checkout.payCardText") },
+    { value: "cod" as const, icon: Wallet, title: t("checkout.payCod"), text: t("checkout.payCodText") },
+  ];
 
   return (
     <form action={action} className="grid gap-8 lg:grid-cols-[1fr_380px]" noValidate>
@@ -91,51 +92,37 @@ export function CheckoutForm({ userName }: { userName: string }) {
 
       <div className="space-y-6">
         <section className="space-y-5 rounded-3xl bg-white p-6 shadow-card">
-          <h2 className="font-sans text-lg font-bold text-ink-900">Отримувач</h2>
+          <h2 className="font-sans text-lg font-bold text-ink-900">{t("checkout.recipient")}</h2>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Ім'я та прізвище" htmlFor="fullName" error={errors.fullName}>
+            <Field label={t("checkout.fullName")} htmlFor="fullName" error={errors.fullName}>
               <Input id="fullName" name="fullName" defaultValue={userName} autoComplete="name" required aria-invalid={Boolean(errors.fullName)} />
             </Field>
-            <Field label="Телефон" htmlFor="phone" error={errors.phone}>
+            <Field label={t("checkout.phone")} htmlFor="phone" error={errors.phone}>
               <Input id="phone" name="phone" type="tel" inputMode="tel" placeholder="067 123 45 67" autoComplete="tel" required aria-invalid={Boolean(errors.phone)} />
             </Field>
           </div>
         </section>
 
         <section className="space-y-5 rounded-3xl bg-white p-6 shadow-card">
-          <h2 className="font-sans text-lg font-bold text-ink-900">Доставка Новою поштою</h2>
+          <h2 className="font-sans text-lg font-bold text-ink-900">{t("checkout.deliveryTitle")}</h2>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Місто" htmlFor="city" error={errors.city}>
+            <Field label={t("checkout.city")} htmlFor="city" error={errors.city}>
               <Input id="city" name="city" placeholder="Київ" autoComplete="address-level2" required aria-invalid={Boolean(errors.city)} />
             </Field>
-            <Field label="Відділення або адреса" htmlFor="branch" error={errors.branch}>
-              <Input id="branch" name="branch" placeholder="Відділення №12" required aria-invalid={Boolean(errors.branch)} />
+            <Field label={t("checkout.branch")} htmlFor="branch" error={errors.branch}>
+              <Input id="branch" name="branch" placeholder="№12" required aria-invalid={Boolean(errors.branch)} />
             </Field>
           </div>
-          <Field label="Коментар майстру" htmlFor="comment" hint="Побажання до кольору, пакування, терміну" error={errors.comment}>
+          <Field label={t("checkout.comment")} htmlFor="comment" hint={t("checkout.commentHint")} error={errors.comment}>
             <Textarea id="comment" name="comment" rows={3} maxLength={500} />
           </Field>
         </section>
 
         <section className="space-y-4 rounded-3xl bg-white p-6 shadow-card">
-          <h2 className="font-sans text-lg font-bold text-ink-900">Оплата</h2>
+          <h2 className="font-sans text-lg font-bold text-ink-900">{t("checkout.payment")}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                { value: "card_demo", icon: CreditCard, title: "Карткою онлайн", text: "Тестовий платіж — гроші не списуються" },
-                { value: "cod", icon: Wallet, title: "При отриманні", text: "Накладений платіж у відділенні" },
-              ] as const
-            ).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setPayment(option.value)}
-                aria-pressed={payment === option.value}
-                className={cn(
-                  "flex items-start gap-3 rounded-2xl border p-4 text-left transition",
-                  payment === option.value ? "border-clay-500 bg-clay-50 ring-2 ring-clay-500/20" : "border-ink-900/10 hover:border-ink-900/30",
-                )}
-              >
+            {options.map((option) => (
+              <button key={option.value} type="button" onClick={() => setPayment(option.value)} aria-pressed={payment === option.value} className={cn("flex items-start gap-3 rounded-2xl border p-4 text-left transition", payment === option.value ? "border-clay-500 bg-clay-50 ring-2 ring-clay-500/20" : "border-ink-900/10 hover:border-ink-900/30")}>
                 <option.icon className={cn("mt-0.5 h-5 w-5", payment === option.value ? "text-clay-600" : "text-ink-300")} />
                 <span>
                   <span className="block text-sm font-semibold text-ink-900">{option.title}</span>
@@ -147,12 +134,12 @@ export function CheckoutForm({ userName }: { userName: string }) {
           {payment === "card_demo" && (
             <div className="rounded-2xl bg-linen-100 p-4">
               <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500">
-                <Lock className="h-3.5 w-3.5" /> Демонстраційна форма картки — можна вводити будь-які цифри
+                <Lock className="h-3.5 w-3.5" /> {t("checkout.demoCard")}
               </p>
               <div className="grid gap-3 sm:grid-cols-[1fr_120px_100px]">
-                <Input placeholder="4242 4242 4242 4242" inputMode="numeric" aria-label="Номер картки" />
-                <Input placeholder="12/28" inputMode="numeric" aria-label="Термін дії" />
-                <Input placeholder="CVC" inputMode="numeric" aria-label="CVC" />
+                <Input placeholder="4242 4242 4242 4242" inputMode="numeric" aria-label={t("checkout.cardNumber")} />
+                <Input placeholder="12/28" inputMode="numeric" aria-label={t("checkout.cardExpiry")} />
+                <Input placeholder="CVC" inputMode="numeric" aria-label={t("checkout.cardCvc")} />
               </div>
             </div>
           )}
@@ -161,13 +148,13 @@ export function CheckoutForm({ userName }: { userName: string }) {
 
       <aside className="h-fit space-y-4 lg:sticky lg:top-32">
         <section className="rounded-3xl bg-white p-6 shadow-card">
-          <h2 className="font-sans text-base font-bold text-ink-900">Ваше замовлення</h2>
+          <h2 className="font-sans text-base font-bold text-ink-900">{t("checkout.yourOrder")}</h2>
           <div className="mt-4 space-y-5">
             {totals.groups.map((group) => {
               const shop = group.lines[0].product.shop;
               return (
                 <div key={group.shopId}>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-500">{shop?.name ?? "Майстерня"}</p>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-500">{shop?.name ?? t("common.shop")}</p>
                   <ul className="space-y-2">
                     {group.lines.map(({ product, quantity }) => (
                       <li key={product.id} className="flex items-center gap-3 text-sm">
@@ -190,19 +177,19 @@ export function CheckoutForm({ userName }: { userName: string }) {
 
         <section className="rounded-3xl bg-white p-6 shadow-card">
           <label htmlFor="promo" className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-700">
-            <BadgePercent className="h-4 w-4" /> Промокод
+            <BadgePercent className="h-4 w-4" /> {t("checkout.promo")}
           </label>
           <div className="flex gap-2">
             <Input id="promo" value={promoInput} onChange={(e) => setPromoInput(e.target.value.toUpperCase())} placeholder="LAVKA10" className="h-10 uppercase" />
             <Button type="button" variant="outline" size="sm" className="h-10" loading={checkingPromo} onClick={applyPromo}>
-              Застосувати
+              {t("cart.apply")}
             </Button>
           </div>
           {promo && (
             <p className="mt-2 text-xs text-moss-600">
               {promo.code}: −{promo.percent}%{" "}
               <button type="button" className="ml-1 underline" onClick={() => { setPromo(null); setPromoInput(""); }}>
-                прибрати
+                {t("cart.removePromo")}
               </button>
             </p>
           )}
@@ -211,20 +198,20 @@ export function CheckoutForm({ userName }: { userName: string }) {
         <section className="rounded-3xl bg-ink-900 p-6 text-linen-50">
           <dl className="space-y-2 text-sm text-linen-300">
             <div className="flex justify-between">
-              <dt>{totals.itemCount} {plural(totals.itemCount, ["товар", "товари", "товарів"])}</dt>
+              <dt>{tp("common.items", totals.itemCount)}</dt>
               <dd className="tabular-nums">{formatPrice(totals.subtotal)}</dd>
             </div>
             {totals.discount > 0 && (
               <div className="flex justify-between text-clay-200">
-                <dt>Знижка</dt>
+                <dt>{t("orders.discount")}</dt>
                 <dd className="tabular-nums">−{formatPrice(totals.discount)}</dd>
               </div>
             )}
-            <div className="flex justify-between"><dt>Доставка</dt><dd>за тарифами НП</dd></div>
+            <div className="flex justify-between"><dt>{t("cart.delivery")}</dt><dd>{t("checkout.deliveryNp")}</dd></div>
           </dl>
           <div className="my-4 h-px bg-white/10" />
           <div className="flex items-baseline justify-between">
-            <span className="font-semibold">До сплати</span>
+            <span className="font-semibold">{t("cart.toPay")}</span>
             <span className="font-display text-3xl font-semibold tabular-nums">{formatPrice(totals.total)}</span>
           </div>
           {state.error && (
@@ -233,10 +220,10 @@ export function CheckoutForm({ userName }: { userName: string }) {
             </p>
           )}
           <Button type="submit" size="lg" className="mt-5 w-full" loading={pending}>
-            {payment === "card_demo" ? `Оплатити ${formatPrice(totals.total)}` : "Підтвердити замовлення"}
+            {payment === "card_demo" ? t("checkout.pay", { amount: formatPrice(totals.total) }) : t("checkout.confirm")}
           </Button>
           <p className="mt-3 text-center text-xs text-linen-300">
-            Натискаючи кнопку, ви погоджуєтесь з умовами сервісу. <Link href="/cart" className="underline">Повернутися до кошика</Link>
+            {t("checkout.terms")} <Link href="/cart" className="underline">{t("checkout.backToCart")}</Link>
           </p>
         </section>
       </aside>

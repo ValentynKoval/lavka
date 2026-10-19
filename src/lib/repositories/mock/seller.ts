@@ -1,3 +1,4 @@
+import { AppError } from "@/lib/errors";
 import { slugify } from "@/lib/utils";
 import type { Product, ProductInput, Shop } from "@/lib/types";
 import type { SellerRepository } from "../types";
@@ -50,7 +51,7 @@ export const mockSellerRepository: SellerRepository = {
   async updateShop(shopId, input) {
     const state = getMockState();
     const shop = state.shops.find((s) => s.id === shopId);
-    if (!shop) throw new Error("Shop not found");
+    if (!shop) throw new AppError("seller.errors.shopNotFound");
     Object.assign(shop, input);
     return shop;
   },
@@ -90,14 +91,14 @@ export const mockSellerRepository: SellerRepository = {
   async updateProduct(shopId, productId, input) {
     const state = getMockState();
     const index = state.products.findIndex((p) => p.id === productId && p.shopId === shopId);
-    if (index === -1) throw new Error("Product not found");
+    if (index === -1) throw new AppError("seller.errors.productNotFound");
     const updated = applyInput(state.products[index], input);
     state.products[index] = updated;
     return updated;
   },
   async updateStock(shopId, productId, stock) {
     const product = await this.getOwnProduct(shopId, productId);
-    if (!product) throw new Error("Product not found");
+    if (!product) throw new AppError("seller.errors.productNotFound");
     product.stock = Math.max(0, stock);
     product.updatedAt = new Date().toISOString();
   },

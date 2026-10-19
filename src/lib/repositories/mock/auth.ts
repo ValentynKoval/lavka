@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { AppError } from "@/lib/errors";
 import type { Profile } from "@/lib/types";
 import type { AuthService } from "../types";
 import { getMockState, newId } from "./store";
@@ -19,7 +20,7 @@ export const mockAuthService: AuthService = {
   },
   async signIn(email, password) {
     const user = getMockState().users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-    if (!user || user.password !== password) return { error: "Невірний e-mail або пароль." };
+    if (!user || user.password !== password) return { error: "auth.errors.invalidCredentials" };
     const store = await cookies();
     store.set(DEMO_SESSION_COOKIE, user.id, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30 });
     return {};
@@ -28,7 +29,7 @@ export const mockAuthService: AuthService = {
     const state = getMockState();
     const normalized = email.trim().toLowerCase();
     if (state.users.some((u) => u.email.toLowerCase() === normalized)) {
-      return { error: "Користувач із таким e-mail уже існує." };
+      return { error: "auth.errors.exists" };
     }
     const user = {
       id: newId("user"),
@@ -49,3 +50,5 @@ export const mockAuthService: AuthService = {
     store.delete(DEMO_SESSION_COOKIE);
   },
 };
+
+export { AppError };

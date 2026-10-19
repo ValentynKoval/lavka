@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getTranslator } from "@/i18n/server";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -20,41 +21,25 @@ function range(page: number, pageCount: number): (number | "…")[] {
   return out;
 }
 
-export function Pagination({ page, pageCount, hrefFor }: PaginationProps) {
+export async function Pagination({ page, pageCount, hrefFor }: PaginationProps) {
   if (pageCount <= 1) return null;
+  const { t } = await getTranslator();
   const linkBase = "flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition";
   return (
-    <nav className="mt-12 flex items-center justify-center gap-1.5" aria-label="Сторінки">
-      <Link
-        href={hrefFor(Math.max(1, page - 1))}
-        aria-disabled={page === 1}
-        className={cn(linkBase, "text-ink-700 hover:bg-ink-900/5", page === 1 && "pointer-events-none opacity-40")}
-        aria-label="Попередня сторінка"
-      >
+    <nav className="mt-12 flex items-center justify-center gap-1.5" aria-label={t("catalog.pages")}>
+      <Link href={hrefFor(Math.max(1, page - 1))} aria-disabled={page === 1} className={cn(linkBase, "text-ink-700 hover:bg-ink-900/5", page === 1 && "pointer-events-none opacity-40")} aria-label={t("catalog.prevPage")}>
         <ChevronLeft className="h-4 w-4" />
       </Link>
       {range(page, pageCount).map((p, i) =>
         p === "…" ? (
-          <span key={`gap-${i}`} className="px-2 text-ink-300">
-            …
-          </span>
+          <span key={`gap-${i}`} className="px-2 text-ink-300">…</span>
         ) : (
-          <Link
-            key={p}
-            href={hrefFor(p)}
-            aria-current={p === page ? "page" : undefined}
-            className={cn(linkBase, p === page ? "bg-ink-900 text-linen-50" : "text-ink-700 hover:bg-ink-900/5")}
-          >
+          <Link key={p} href={hrefFor(p)} aria-current={p === page ? "page" : undefined} className={cn(linkBase, p === page ? "bg-ink-900 text-linen-50" : "text-ink-700 hover:bg-ink-900/5")}>
             {p}
           </Link>
         ),
       )}
-      <Link
-        href={hrefFor(Math.min(pageCount, page + 1))}
-        aria-disabled={page === pageCount}
-        className={cn(linkBase, "text-ink-700 hover:bg-ink-900/5", page === pageCount && "pointer-events-none opacity-40")}
-        aria-label="Наступна сторінка"
-      >
+      <Link href={hrefFor(Math.min(pageCount, page + 1))} aria-disabled={page === pageCount} className={cn(linkBase, "text-ink-700 hover:bg-ink-900/5", page === pageCount && "pointer-events-none opacity-40")} aria-label={t("catalog.nextPage")}>
         <ChevronRight className="h-4 w-4" />
       </Link>
     </nav>

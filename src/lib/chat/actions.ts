@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeError } from "@/i18n/errors";
+import { getTranslator } from "@/i18n/server";
 import { getCurrentUser, requireUser } from "@/lib/auth/session";
 import { getChatRepository } from "@/lib/repositories";
 import type { Message } from "@/lib/types";
@@ -15,16 +17,18 @@ export async function startConversationAction(shopId: string, shopSlug: string):
 }
 
 export async function sendMessageAction(conversationId: string, body: string): Promise<{ message?: Message; error?: string }> {
+  const translator = await getTranslator();
+  const { t } = translator;
   const user = await requireUser();
   const text = body.trim();
-  if (!text) return { error: "Порожнє повідомлення" };
-  if (text.length > 2000) return { error: "До 2000 символів" };
+  if (!text) return { error: t("chat.errors.empty") };
+  if (text.length > 2000) return { error: t("chat.errors.tooLong") };
   try {
     const message = await getChatRepository().sendMessage(conversationId, user.id, text);
     revalidatePath("/messages");
     return { message };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Не вдалося надіслати" };
+    return { error: localizeError(translator, e, "chat.errors.sendFailed") };
   }
 }
 

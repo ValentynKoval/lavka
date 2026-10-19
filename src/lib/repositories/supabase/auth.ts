@@ -2,14 +2,15 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { AuthService } from "../types";
 import { mapProfile } from "./mappers";
 
-function translateAuthError(message: string): string {
+/** Maps Supabase auth errors to dictionary keys (translated by the auth actions). */
+function authErrorKey(message: string): string {
   const m = message.toLowerCase();
-  if (m.includes("invalid login credentials")) return "Невірний e-mail або пароль.";
-  if (m.includes("already registered") || m.includes("already exists")) return "Користувач із таким e-mail уже існує.";
-  if (m.includes("password should be at least")) return "Пароль має містити щонайменше 6 символів.";
-  if (m.includes("email not confirmed")) return "Підтвердьте e-mail за посиланням із листа.";
-  if (m.includes("rate limit")) return "Забагато спроб. Спробуйте за хвилину.";
-  return "Не вдалося виконати дію. Спробуйте ще раз.";
+  if (m.includes("invalid login credentials")) return "auth.errors.invalidCredentials";
+  if (m.includes("already registered") || m.includes("already exists")) return "auth.errors.exists";
+  if (m.includes("password should be at least")) return "auth.errors.passwordShort";
+  if (m.includes("email not confirmed")) return "auth.errors.notConfirmed";
+  if (m.includes("rate limit")) return "auth.errors.rateLimit";
+  return "auth.errors.generic";
 }
 
 export const supabaseAuthService: AuthService = {
@@ -34,7 +35,7 @@ export const supabaseAuthService: AuthService = {
   async signIn(email, password) {
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? { error: translateAuthError(error.message) } : {};
+    return error ? { error: authErrorKey(error.message) } : {};
   },
   async signUp(email, password, fullName) {
     const supabase = await createSupabaseServerClient();
@@ -43,7 +44,7 @@ export const supabaseAuthService: AuthService = {
       password,
       options: { data: { full_name: fullName.trim() } },
     });
-    if (error) return { error: translateAuthError(error.message) };
+    if (error) return { error: authErrorKey(error.message) };
     if (!data.session) return { needsConfirmation: true };
     return {};
   },

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Command, Loader2, Search, Store, Tag } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { quickSearchAction, type QuickSearchResult } from "@/lib/catalog/search-actions";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ type Item = { key: string; href: string; render: () => React.ReactNode };
 
 /** ⌘K / Ctrl+K search palette over products, makers and categories. */
 export function CommandPalette() {
+  const { t, locale } = useT();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<QuickSearchResult>(EMPTY);
@@ -23,7 +25,8 @@ export function CommandPalette() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      // e.code is layout-independent: works on Cyrillic keyboards where e.key is "л".
+      if ((e.metaKey || e.ctrlKey) && (e.code === "KeyK" || e.key.toLowerCase() === "k")) {
         e.preventDefault();
         setOpen((v) => !v);
       }
@@ -40,10 +43,10 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (!open) return;
-    const t = setTimeout(() => inputRef.current?.focus(), 20);
+    const timer = setTimeout(() => inputRef.current?.focus(), 20);
     document.body.style.overflow = "hidden";
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       document.body.style.overflow = "";
     };
   }, [open]);
@@ -52,10 +55,10 @@ export function CommandPalette() {
   useEffect(() => {
     if (!open || shortQuery) return;
     let cancelled = false;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const r = await quickSearchAction(query);
+        const r = await quickSearchAction(query, locale);
         if (!cancelled) {
           setResults(r);
           setActive(0);
@@ -66,9 +69,9 @@ export function CommandPalette() {
     }, 180);
     return () => {
       cancelled = true;
-      clearTimeout(t);
+      clearTimeout(timer);
     };
-  }, [query, open, shortQuery]);
+  }, [query, open, shortQuery, locale]);
   const visible = shortQuery ? EMPTY : results;
 
   const go = useCallback(
@@ -88,7 +91,7 @@ export function CommandPalette() {
         <>
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-clay-100 text-clay-700"><Tag className="h-4 w-4" /></span>
           <span className="flex-1 text-sm font-semibold text-ink-900">{c.name}</span>
-          <span className="text-xs text-ink-500">Категорія</span>
+          <span className="text-xs text-ink-500">{t("search.category")}</span>
         </>
       ),
     })),
@@ -132,7 +135,7 @@ export function CommandPalette() {
       render: () => (
         <>
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink-900 text-linen-50"><Search className="h-4 w-4" /></span>
-          <span className="flex-1 text-sm font-semibold text-ink-900">Усі результати для «{query.trim()}»</span>
+          <span className="flex-1 text-sm font-semibold text-ink-900">{t("search.allResults", { query: query.trim() })}</span>
           <ArrowRight className="h-4 w-4 text-ink-300" />
         </>
       ),
@@ -142,7 +145,7 @@ export function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label="Швидкий пошук">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label={t("nav.quickSearch")}>
       <div className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
       <div className="relative w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-float animate-fade-up">
         <div className="flex items-center gap-3 border-b border-ink-900/5 px-5">
@@ -163,32 +166,27 @@ export function CommandPalette() {
                 go(items[active].href);
               }
             }}
-            placeholder="Шукати вироби, майстрів, категорії…"
+            placeholder={t("search.palettePlaceholder")}
             className="h-14 flex-1 bg-transparent text-base text-ink-900 placeholder:text-ink-300 focus:outline-none"
-            aria-label="Пошук"
+            aria-label={t("search.aria")}
           />
           <kbd className="hidden rounded-md border border-ink-900/10 px-1.5 py-0.5 text-[10px] font-semibold text-ink-500 sm:block">Esc</kbd>
         </div>
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {shortQuery ? (
             <div className="px-4 py-8 text-center text-sm text-ink-500">
-              <p>Почніть вводити назву виробу, матеріал або ім&apos;я майстра.</p>
+              <p>{t("search.paletteHint")}</p>
               <p className="mt-2 inline-flex items-center gap-1 text-xs text-ink-300">
-                <Command className="h-3 w-3" /> K — відкрити пошук будь-де
+                <Command className="h-3 w-3" /> {t("search.paletteShortcut")}
               </p>
             </div>
           ) : items.length === 0 && !loading ? (
-            <p className="px-4 py-8 text-center text-sm text-ink-500">Нічого не знайшли. Спробуйте інше слово.</p>
+            <p className="px-4 py-8 text-center text-sm text-ink-500">{t("search.nothingFound")}</p>
           ) : (
             <ul role="listbox">
               {items.map((item, i) => (
                 <li key={item.key} role="option" aria-selected={i === active}>
-                  <button
-                    type="button"
-                    onMouseEnter={() => setActive(i)}
-                    onClick={() => go(item.href)}
-                    className={cn("flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition", i === active ? "bg-linen-100" : "hover:bg-linen-50")}
-                  >
+                  <button type="button" onMouseEnter={() => setActive(i)} onClick={() => go(item.href)} className={cn("flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition", i === active ? "bg-linen-100" : "hover:bg-linen-50")}>
                     {item.render()}
                   </button>
                 </li>
@@ -203,13 +201,9 @@ export function CommandPalette() {
 
 /** Small trigger used in the header. */
 export function CommandPaletteTrigger({ className }: { className?: string }) {
+  const { t } = useT();
   return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new Event("lavka:open-search"))}
-      className={cn("inline-flex h-10 items-center gap-2 rounded-full border border-ink-900/10 bg-white px-3 text-xs font-semibold text-ink-500 transition hover:border-ink-900/30 hover:text-ink-900", className)}
-      aria-label="Швидкий пошук (Ctrl+K)"
-    >
+    <button type="button" onClick={() => window.dispatchEvent(new Event("lavka:open-search"))} className={cn("inline-flex h-10 items-center gap-2 rounded-full border border-ink-900/10 bg-white px-3 text-xs font-semibold text-ink-500 transition hover:border-ink-900/30 hover:text-ink-900", className)} aria-label={t("nav.quickSearch")}>
       <Search className="h-4 w-4" />
       <kbd className="rounded border border-ink-900/10 px-1 text-[10px]">Ctrl K</kbd>
     </button>

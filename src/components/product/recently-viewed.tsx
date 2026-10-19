@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/i18n/client";
 import { getProductsByIdsAction } from "@/lib/catalog/actions";
 import { recordViewAction } from "@/lib/catalog/view-actions";
 import { useRecentlyViewedStore } from "@/lib/stores/recently-viewed-store";
 import type { Product } from "@/lib/types";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { ProductGrid } from "./product-grid";
 
 /** Records a product view (analytics) and remembers it for the "recently viewed" strip. */
@@ -18,7 +18,8 @@ export function TrackProductView({ productId }: { productId: string }) {
   return null;
 }
 
-export function RecentlyViewed({ excludeId, title = "Ви нещодавно дивились" }: { excludeId?: string; title?: string }) {
+export function RecentlyViewed({ excludeId }: { excludeId?: string }) {
+  const { t } = useT();
   const ids = useRecentlyViewedStore((s) => s.ids);
   const hydrated = useRecentlyViewedStore((s) => s.hydrated);
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,7 +42,10 @@ export function RecentlyViewed({ excludeId, title = "Ви нещодавно д�
   if (!hydrated || products.length === 0) return null;
   return (
     <section className="mt-20 animate-fade-up">
-      <SectionHeading eyebrow="Історія" title={title} />
+      <div className="mb-8">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">{t("home.recentEyebrow")}</p>
+        <h2 className="text-3xl font-semibold text-ink-900 sm:text-4xl">{t("home.recentTitle")}</h2>
+      </div>
       <ProductGrid products={products} />
     </section>
   );

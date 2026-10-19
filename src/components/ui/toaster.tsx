@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { CheckCircle2, Info, X, XCircle } from "lucide-react";
 import { create } from "zustand";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 type ToastTone = "success" | "error" | "info";
@@ -23,8 +24,7 @@ let counter = 0;
 
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],
-  push: (message, tone = "success") =>
-    set((s) => ({ toasts: [...s.toasts, { id: ++counter, message, tone }].slice(-4) })),
+  push: (message, tone = "success") => set((s) => ({ toasts: [...s.toasts, { id: ++counter, message, tone }].slice(-4) })),
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }));
 
@@ -40,22 +40,18 @@ const icons: Record<ToastTone, React.ReactNode> = {
   info: <Info className="h-5 w-5 text-clay-500" />,
 };
 
-function ToastItem({ toast: t }: { toast: Toast }) {
+function ToastItem({ toast: item }: { toast: Toast }) {
+  const { t } = useT();
   const dismiss = useToastStore((s) => s.dismiss);
   useEffect(() => {
-    const timer = setTimeout(() => dismiss(t.id), 3500);
+    const timer = setTimeout(() => dismiss(item.id), 3500);
     return () => clearTimeout(timer);
-  }, [t.id, dismiss]);
+  }, [item.id, dismiss]);
   return (
-    <div
-      role="status"
-      className={cn(
-        "pointer-events-auto flex items-center gap-3 rounded-2xl border border-ink-900/10 bg-white px-4 py-3 text-sm text-ink-900 shadow-float animate-fade-up",
-      )}
-    >
-      {icons[t.tone]}
-      <span className="flex-1">{t.message}</span>
-      <button onClick={() => dismiss(t.id)} className="text-ink-300 hover:text-ink-900" aria-label="Закрити">
+    <div role="status" className={cn("pointer-events-auto flex items-center gap-3 rounded-2xl border border-ink-900/10 bg-white px-4 py-3 text-sm text-ink-900 shadow-float animate-fade-up")}>
+      {icons[item.tone]}
+      <span className="flex-1">{item.message}</span>
+      <button onClick={() => dismiss(item.id)} className="text-ink-300 hover:text-ink-900" aria-label={t("common.close")}>
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -66,8 +62,8 @@ export function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:items-end sm:px-6">
-      {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} />
+      {toasts.map((item) => (
+        <ToastItem key={item.id} toast={item} />
       ))}
     </div>
   );

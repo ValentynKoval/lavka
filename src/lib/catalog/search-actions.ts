@@ -1,6 +1,7 @@
 "use server";
 
-import { CATEGORIES } from "@/data/taxonomy";
+import { getTaxonomy } from "@/data/taxonomy-i18n";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
 import { getCatalogRepository } from "@/lib/repositories";
 
 export interface QuickSearchResult {
@@ -13,12 +14,15 @@ function normalize(s: string): string {
   return s.toLowerCase().replace(/[’'`]/g, "").trim();
 }
 
-/** Lightweight search for the command palette: products, shops and categories. */
-export async function quickSearchAction(query: string): Promise<QuickSearchResult> {
+/** Lightweight search for the command palette: products, shops and categories (category names in the given language). */
+export async function quickSearchAction(query: string, localeInput?: string): Promise<QuickSearchResult> {
+  const locale = isLocale(localeInput) ? localeInput : DEFAULT_LOCALE;
   const q = normalize(query).slice(0, 60);
   if (q.length < 2) return { products: [], shops: [], categories: [] };
   const repo = getCatalogRepository();
   const [page, shops] = await Promise.all([repo.listProducts({ query: q, sort: "popular", page: 1 }), repo.listShops()]);
+  const { categories } = getTaxonomy(locale);
+  const ukCategories = getTaxonomy("uk").categories;
   return {
     products: page.items.slice(0, 6).map((p) => ({
       id: p.id,
@@ -32,6 +36,8 @@ export async function quickSearchAction(query: string): Promise<QuickSearchResul
       .filter((s) => normalize(`${s.name} ${s.tagline} ${s.city}`).includes(q))
       .slice(0, 3)
       .map((s) => ({ id: s.id, slug: s.slug, name: s.name, avatarUrl: s.avatarUrl, city: s.city })),
-    categories: CATEGORIES.filter((c) => normalize(`${c.name} ${c.description}`).includes(q)).map((c) => ({ slug: c.slug, name: c.name })),
+    categories: categories
+      .filter((c, i) => normalize(`${c.name} ${c.description} ${ukCategories[i].name} ${ukCategories[i].description}`).includes(q))
+      .map((c) => ({ slug: c.slug, name: c.name })),
   };
 }

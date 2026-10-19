@@ -1,18 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { regionBySlug } from "@/data/taxonomy";
+import { getTaxonomy } from "@/data/taxonomy-i18n";
+import { getTranslator } from "@/i18n/server";
 import type { Shop } from "@/lib/types";
-import { plural } from "@/lib/utils";
 
-export function ShopCard({ shop }: { shop: Shop }) {
-  const region = regionBySlug(shop.regionSlug)?.name;
+export async function ShopCard({ shop }: { shop: Shop }) {
+  const { tp, locale } = await getTranslator();
+  const region = getTaxonomy(locale).regionBySlug(shop.regionSlug)?.name;
   const count = shop.productCount ?? 0;
   return (
-    <Link
-      href={`/shop/${shop.slug}`}
-      className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-card transition-shadow hover:shadow-card-hover"
-    >
+    <Link href={`/shop/${shop.slug}`} className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-card transition-shadow hover:shadow-card-hover">
       <div className="relative aspect-[16/7] overflow-hidden bg-linen-200">
         <Image src={shop.coverUrl} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
@@ -27,9 +25,7 @@ export function ShopCard({ shop }: { shop: Shop }) {
             <MapPin className="h-3.5 w-3.5" /> {shop.city}
             {region ? `, ${region}` : ""}
           </span>
-          <span className="font-semibold text-ink-700">
-            {count} {plural(count, ["виріб", "вироби", "виробів"])}
-          </span>
+          <span className="font-semibold text-ink-700">{tp("common.products", count)}</span>
         </div>
       </div>
     </Link>

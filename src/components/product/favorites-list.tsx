@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { getProductsByIdsAction } from "@/lib/catalog/actions";
 import { useFavoritesStore } from "@/lib/stores/favorites-store";
 import type { Product } from "@/lib/types";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 export function FavoritesList() {
+  const { t } = useT();
   const ids = useFavoritesStore((s) => s.ids);
   const hydrated = useFavoritesStore((s) => s.hydrated);
   const [products, setProducts] = useState<Product[] | null>(null);
@@ -41,14 +43,7 @@ export function FavoritesList() {
   }
 
   if (products.length === 0) {
-    return (
-      <EmptyState
-        icon={<Heart className="h-6 w-6" />}
-        title="В обраному поки порожньо"
-        description="Натискайте на сердечко на картках товарів — і вони з'являться тут. Обране зберігається в цьому браузері, а після входу — в акаунті."
-        action={<Button href="/catalog">До каталогу</Button>}
-      />
-    );
+    return <EmptyState icon={<Heart className="h-6 w-6" />} title={t("favorites.emptyTitle")} description={t("favorites.emptyText")} action={<Button href="/catalog">{t("common.toCatalog")}</Button>} />;
   }
 
   return <ProductGrid products={products} />;

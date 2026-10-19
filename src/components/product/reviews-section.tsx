@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { BadgeCheck, MessageSquareQuote } from "lucide-react";
+import { getTranslator } from "@/i18n/server";
 import { getReviewsRepository } from "@/lib/repositories";
 import { ratingSummary } from "@/lib/stats/aggregate";
 import type { Product, Profile } from "@/lib/types";
-import { plural } from "@/lib/utils";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { ReviewForm } from "./review-form";
 
-const dateFormat = new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", year: "numeric" });
-
 export async function ReviewsSection({ product, user }: { product: Product; user: Profile | null }) {
+  const { t, tp, formatDate } = await getTranslator();
   const repo = getReviewsRepository();
   const [reviews, own, purchased] = await Promise.all([
     repo.listForProduct(product.id),
@@ -17,19 +16,14 @@ export async function ReviewsSection({ product, user }: { product: Product; user
     user ? repo.hasPurchased(user.id, product.id) : Promise.resolve(false),
   ]);
   const summary = ratingSummary(reviews);
-  const distribution = [5, 4, 3, 2, 1].map((star) => ({
-    star,
-    count: reviews.filter((r) => r.rating === star).length,
-  }));
+  const distribution = [5, 4, 3, 2, 1].map((star) => ({ star, count: reviews.filter((r) => r.rating === star).length }));
 
   return (
     <section id="reviews" className="mt-20 scroll-mt-32">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">Відгуки</p>
-          <h2 className="text-3xl font-semibold text-ink-900 sm:text-4xl">
-            {summary.count > 0 ? `${summary.count} ${plural(summary.count, ["відгук", "відгуки", "відгуків"])}` : "Відгуків поки немає"}
-          </h2>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">{t("reviews.eyebrow")}</p>
+          <h2 className="text-3xl font-semibold text-ink-900 sm:text-4xl">{summary.count > 0 ? tp("common.reviews", summary.count) : t("reviews.none")}</h2>
         </div>
         {summary.count > 0 && <RatingStars value={summary.average} size="lg" showValue />}
       </div>
@@ -55,15 +49,15 @@ export async function ReviewsSection({ product, user }: { product: Product; user
           )}
 
           <div className="rounded-3xl border border-ink-900/10 bg-linen-100 p-6">
-            <h3 className="font-sans text-base font-bold text-ink-900">{own ? "Ваш відгук" : "Залишити відгук"}</h3>
+            <h3 className="font-sans text-base font-bold text-ink-900">{own ? t("reviews.yourReview") : t("reviews.leaveReview")}</h3>
             {user ? (
               <ReviewForm productId={product.id} productSlug={product.slug} existing={own} purchased={purchased} />
             ) : (
               <p className="mt-2 text-sm text-ink-500">
                 <Link href={`/login?next=${encodeURIComponent(`/product/${product.slug}#reviews`)}`} className="font-semibold text-clay-600 hover:underline">
-                  Увійдіть
+                  {t("reviews.loginToReview")}
                 </Link>
-                , щоб поділитися враженням про виріб.
+                {t("reviews.loginToReviewTail")}
               </p>
             )}
           </div>
@@ -73,7 +67,7 @@ export async function ReviewsSection({ product, user }: { product: Product; user
           {reviews.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-ink-900/15 bg-white/50 px-6 py-16 text-center">
               <MessageSquareQuote className="mb-3 h-8 w-8 text-clay-500" />
-              <p className="text-ink-700">Станьте першим, хто розповість про цей виріб.</p>
+              <p className="text-ink-700">{t("reviews.beFirst")}</p>
             </div>
           ) : (
             <ul className="space-y-4">
@@ -87,16 +81,16 @@ export async function ReviewsSection({ product, user }: { product: Product; user
                       <div>
                         <p className="text-sm font-semibold text-ink-900">
                           {review.authorName}
-                          {review.userId === user?.id && <span className="ml-2 text-xs font-normal text-ink-500">(ви)</span>}
+                          {review.userId === user?.id && <span className="ml-2 text-xs font-normal text-ink-500">{t("common.you")}</span>}
                         </p>
-                        <p className="text-xs text-ink-500">{dateFormat.format(new Date(review.createdAt))}</p>
+                        <p className="text-xs text-ink-500">{formatDate(review.createdAt)}</p>
                       </div>
                     </div>
                     <RatingStars value={review.rating} size="sm" />
                   </div>
                   <p className="mt-4 text-[15px] leading-relaxed text-ink-700">{review.text}</p>
                   <p className="mt-3 inline-flex items-center gap-1 text-xs text-moss-600">
-                    <BadgeCheck className="h-3.5 w-3.5" /> Покупець Lavka
+                    <BadgeCheck className="h-3.5 w-3.5" /> {t("reviews.verified")}
                   </p>
                 </li>
               ))}

@@ -1,3 +1,4 @@
+import { AppError } from "@/lib/errors";
 import { computeAdminStats, computeShopStats, ratingSummary, canTransition } from "@/lib/stats/aggregate";
 import { computeCheckout, promoPercent } from "@/lib/orders/checkout";
 import type { CartLineDetailed, Conversation, Order, Product, Profile, Review, Shop } from "@/lib/types";
@@ -24,12 +25,12 @@ export const mockOrdersRepository: OrdersRepository = {
     const detailed: CartLineDetailed[] = [];
     for (const line of input.lines) {
       const product = state.products.find((p) => p.id === line.productId && p.status === "active");
-      if (!product) throw new Error("Один із товарів більше недоступний.");
-      if (product.stock < line.quantity) throw new Error(`Недостатньо залишку: ${product.title}`);
+      if (!product) throw new AppError("errors.productUnavailable");
+      if (product.stock < line.quantity) throw new AppError("errors.notEnoughStock", { title: product.title });
       detailed.push({ ...line, product });
     }
     const promo = input.promoCode ? await this.getPromoCode(input.promoCode) : null;
-    if (input.promoCode && !promo) throw new Error("Промокод недійсний.");
+    if (input.promoCode && !promo) throw new AppError("errors.promoInvalid");
     const totals = computeCheckout(detailed, promoPercent(promo));
     const now = new Date().toISOString();
     const created: Order[] = totals.groups.map((group) => {
@@ -86,8 +87,8 @@ export const mockOrdersRepository: OrdersRepository = {
   },
   async updateStatus(shopId, orderId, status) {
     const order = getMockState().orders.find((o) => o.id === orderId && o.shopId === shopId);
-    if (!order) throw new Error("Замовлення не знайдено");
-    if (!canTransition(order.status, status)) throw new Error("Такий перехід статусу неможливий");
+    if (!order) throw new AppError("orders.errors.notFound");
+    if (!canTransition(order.status, status)) throw new AppError("orders.errors.badTransition");
     order.status = status;
     if (status === "cancelled") order.paymentStatus = order.paymentStatus === "paid" ? "refunded" : "pending";
     if (status === "delivered" && order.paymentMethod === "cod") order.paymentStatus = "paid";
@@ -111,7 +112,7 @@ export const mockReviewsRepository: ReviewsRepository = {
   async upsertReview(userId, productId, rating, text) {
     const state = getMockState();
     const existing = state.reviews.find((r) => r.userId === userId && r.productId === productId);
-    const authorName = state.users.find((u) => u.id === userId)?.fullName ?? "Покупець";
+    const authorName = state.users.find((u) => u.id === userId)?.fullName ?? "";
     if (existing) {
       Object.assign(existing, { rating, text, createdAt: new Date().toISOString() });
       return existing;
@@ -139,9 +140,7 @@ export const mockReviewsRepository: ReviewsRepository = {
     return ratingSummary(state.reviews.filter((r) => ids.has(r.productId)));
   },
   async hasPurchased(userId, productId) {
-    return getMockState().orders.some(
-      (o) => o.buyerId === userId && o.status === "delivered" && o.items.some((i) => i.productId === productId),
-    );
+    return getMockState().orders.some((o) => o.buyerId === userId && o.status === "delivered" && o.items.some((i) => i.productId === productId));
   },
 };
 
@@ -194,7 +193,7 @@ export const mockChatRepository: ChatRepository = {
   async sendMessage(conversationId, senderId, body) {
     const state = getMockState();
     const conv = state.conversations.find((c) => c.id === conversationId);
-    if (!conv || !isParticipant(conv, senderId)) throw new Error("Розмову не знайдено");
+    if (!conv || !isParticipant(conv, senderId)) throw new AppError("chat.errors.notFound");
     const message = { id: newId("msg"), conversationId, senderId, body: body.trim(), createdAt: new Date().toISOString(), readAt: null };
     state.messages.push(message);
     conv.lastMessageAt = message.createdAt;
@@ -225,11 +224,7 @@ export const mockStatsRepository: StatsRepository = {
     const state = getMockState();
     const products = state.products.filter((p) => p.shopId === shopId);
     const ids = new Set(products.map((p) => p.id));
-    return computeShopStats(
-      products,
-      state.views.filter((v) => ids.has(v.productId)),
-      state.orders.filter((o) => o.shopId === shopId),
-    );
+    return computeShopStats(products, state.views.filter((v) => ids.has(v.productId)), state.orders.filter((o) => o.shopId === shopId));
   },
   async adminStats() {
     const state = getMockState();
@@ -276,18 +271,18 @@ export const mockAdminRepository: AdminRepository = {
   },
   async setProductStatus(productId, status) {
     const product = getMockState().products.find((p) => p.id === productId);
-    if (!product) throw new Error("Товар не знайдено");
+    if (!product) throw new AppError("seller.errors.productNotFound");
     product.status = status;
     product.updatedAt = new Date().toISOString();
   },
   async setShopHidden(shopId, hidden) {
     const shop = getMockState().shops.find((s) => s.id === shopId);
-    if (!shop) throw new Error("Лавку не знайдено");
+    if (!shop) throw new AppError("seller.errors.shopNotFound");
     shop.isHidden = hidden;
   },
   async setUserRole(userId, role) {
     const user = getMockState().users.find((u) => u.id === userId);
-    if (!user) throw new Error("Користувача не знайдено");
+    if (!user) throw new AppError("errors.userNotFound");
     user.role = role;
   },
 };

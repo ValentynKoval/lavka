@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Send } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { fetchMessagesAction, markReadAction, sendMessageAction } from "@/lib/chat/actions";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Message } from "@/lib/types";
@@ -16,9 +17,6 @@ interface ChatWindowProps {
   realtime: boolean;
 }
 
-const timeFormat = new Intl.DateTimeFormat("uk-UA", { hour: "2-digit", minute: "2-digit" });
-const dayFormat = new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long" });
-
 function mergeMessages(current: Message[], incoming: Message[]): Message[] {
   const map = new Map(current.map((m) => [m.id, m]));
   for (const m of incoming) map.set(m.id, m);
@@ -26,6 +24,7 @@ function mergeMessages(current: Message[], incoming: Message[]): Message[] {
 }
 
 export function ChatWindow({ conversationId, initialMessages, viewerId, realtime }: ChatWindowProps) {
+  const { t, formatDate } = useT();
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, startSend] = useTransition();
@@ -84,7 +83,7 @@ export function ChatWindow({ conversationId, initialMessages, viewerId, realtime
     startSend(async () => {
       const result = await sendMessageAction(conversationId, body);
       if (result.error || !result.message) {
-        toast.error(result.error ?? "Не вдалося надіслати");
+        toast.error(result.error ?? t("chat.errors.sendFailed"));
         setDraft(body);
         return;
       }
@@ -93,15 +92,17 @@ export function ChatWindow({ conversationId, initialMessages, viewerId, realtime
     });
   };
 
+  const dayOf = (iso: string) => formatDate(iso, { day: "numeric", month: "long" });
   const rows = messages.map((m, i) => {
-    const day = dayFormat.format(new Date(m.createdAt));
-    const prevDay = i > 0 ? dayFormat.format(new Date(messages[i - 1].createdAt)) : "";
+    const day = dayOf(m.createdAt);
+    const prevDay = i > 0 ? dayOf(messages[i - 1].createdAt) : "";
     return { m, day, showDay: day !== prevDay };
   });
+
   return (
     <>
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
-        {messages.length === 0 && <p className="py-10 text-center text-sm text-ink-500">Напишіть перше повідомлення — майстер отримає його одразу.</p>}
+        {messages.length === 0 && <p className="py-10 text-center text-sm text-ink-500">{t("chat.firstMessage")}</p>}
         {rows.map(({ m, day, showDay }) => {
           const mine = m.senderId === viewerId;
           return (
@@ -111,8 +112,8 @@ export function ChatWindow({ conversationId, initialMessages, viewerId, realtime
                 <div className={cn("max-w-[78%] rounded-3xl px-4 py-2.5 text-sm leading-relaxed shadow-sm animate-fade-up", mine ? "rounded-br-md bg-clay-500 text-white" : "rounded-bl-md bg-linen-100 text-ink-900")}>
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
                   <p className={cn("mt-1 text-[10px]", mine ? "text-clay-100" : "text-ink-500")}>
-                    {timeFormat.format(new Date(m.createdAt))}
-                    {mine && (m.readAt ? " · прочитано" : "")}
+                    {formatDate(m.createdAt, { hour: "2-digit", minute: "2-digit" })}
+                    {mine && m.readAt ? ` · ${t("chat.read")}` : ""}
                   </p>
                 </div>
               </div>
@@ -139,11 +140,11 @@ export function ChatWindow({ conversationId, initialMessages, viewerId, realtime
           }}
           rows={1}
           maxLength={2000}
-          placeholder="Напишіть повідомлення… (Enter — надіслати, Shift+Enter — новий рядок)"
+          placeholder={t("chat.placeholder")}
           className="max-h-40 min-h-11 flex-1 resize-y rounded-2xl border border-ink-900/15 bg-white px-4 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-clay-500 focus:outline-none focus:ring-2 focus:ring-clay-500/20"
-          aria-label="Повідомлення"
+          aria-label={t("chat.messageAria")}
         />
-        <Button type="submit" size="icon" loading={sending} aria-label="Надіслати" className="h-11 w-11 shrink-0">
+        <Button type="submit" size="icon" loading={sending} aria-label={t("chat.send")} className="h-11 w-11 shrink-0">
           {!sending && <Send className="h-4 w-4" />}
         </Button>
       </form>

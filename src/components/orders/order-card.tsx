@@ -1,13 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useT } from "@/i18n/client";
 import type { Order } from "@/lib/types";
-import { formatPrice, plural } from "@/lib/utils";
-import { OrderStatusBadge, PAYMENT_LABEL } from "./order-status";
-
-const dateFormat = new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+import { formatPrice } from "@/lib/utils";
+import { OrderStatusBadge } from "./order-status";
 
 export function OrderCard({ order, href, showBuyer = false }: { order: Order; href: string; showBuyer?: boolean }) {
+  const { t, tp, formatDate } = useT();
   const count = order.items.reduce((s, i) => s + i.quantity, 0);
   return (
     <Link href={href} className="group block rounded-3xl bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover sm:p-6">
@@ -16,7 +18,7 @@ export function OrderCard({ order, href, showBuyer = false }: { order: Order; hr
           <span className="font-display text-xl font-semibold text-ink-900">{order.number}</span>
           <OrderStatusBadge status={order.status} />
         </div>
-        <span className="text-xs text-ink-500">{dateFormat.format(new Date(order.createdAt))}</span>
+        <span className="text-xs text-ink-500">{formatDate(order.createdAt, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
       </div>
       <div className="mt-4 flex items-center gap-3">
         <div className="flex -space-x-3">
@@ -29,8 +31,7 @@ export function OrderCard({ order, href, showBuyer = false }: { order: Order; hr
         <div className="min-w-0 flex-1 text-sm text-ink-700">
           <p className="truncate">{order.items.map((i) => i.title).join(", ")}</p>
           <p className="text-xs text-ink-500">
-            {count} {plural(count, ["товар", "товари", "товарів"])} ·{" "}
-            {showBuyer ? `${order.buyer?.fullName ?? "Покупець"} · ${order.delivery.city}` : `${order.shop?.name ?? ""} · ${PAYMENT_LABEL[order.paymentStatus]}`}
+            {tp("common.items", count)} · {showBuyer ? `${order.buyer?.fullName ?? t("common.buyer")} · ${order.delivery.city}` : `${order.shop?.name ?? ""} · ${t(`orders.paymentStatuses.${order.paymentStatus}`)}`}
           </p>
         </div>
         <div className="text-right">

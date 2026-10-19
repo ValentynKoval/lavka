@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { localizeError } from "@/i18n/errors";
+import { getTranslator } from "@/i18n/server";
 import { getCurrentUser, requireSeller, requireUser } from "@/lib/auth/session";
 import { getOrdersRepository, getUserDataRepository } from "@/lib/repositories";
 import type { CartLine, OrderStatus } from "@/lib/types";
@@ -13,22 +15,17 @@ export interface CheckoutState {
   fieldErrors?: Record<string, string>;
 }
 
-const deliverySchema = z.object({
-  fullName: z.string().trim().min(3, "Вкажіть ім'я та прізвище").max(80),
-  phone: z.string().trim().min(9, "Вкажіть номер телефону"),
-  city: z.string().trim().min(2, "Вкажіть місто").max(60),
-  branch: z.string().trim().min(1, "Вкажіть відділення або адресу").max(120),
-  comment: z.string().trim().max(500, "До 500 символів"),
-});
-
 export async function validatePromoAction(code: string): Promise<{ code: string; percent: number } | { error: string }> {
+  const { t } = await getTranslator();
   const trimmed = code.trim().toUpperCase();
-  if (!trimmed) return { error: "Введіть промокод" };
+  if (!trimmed) return { error: t("checkout.errors.promoEmpty") };
   const promo = await getOrdersRepository().getPromoCode(trimmed);
-  return promo ? { code: promo.code, percent: promo.percent } : { error: "Такого промокоду немає або він уже не діє" };
+  return promo ? { code: promo.code, percent: promo.percent } : { error: t("checkout.errors.promoInvalid") };
 }
 
 export async function placeOrderAction(_prev: CheckoutState, formData: FormData): Promise<CheckoutState> {
+  const translator = await getTranslator();
+  const { t } = translator;
   const user = await requireUser("/checkout");
   let lines: CartLine[] = [];
   try {
@@ -37,9 +34,16 @@ export async function placeOrderAction(_prev: CheckoutState, formData: FormData)
     lines = [];
   }
   lines = lines.filter((l) => typeof l.productId === "string" && Number.isInteger(l.quantity) && l.quantity > 0);
-  if (lines.length === 0) return { error: "Кошик порожній." };
+  if (lines.length === 0) return { error: t("checkout.errors.emptyCart") };
 
-  const parsed = deliverySchema.safeParse({
+  const schema = z.object({
+    fullName: z.string().trim().min(3, t("checkout.errors.fullName")).max(80),
+    phone: z.string().trim().min(9, t("checkout.errors.phone")),
+    city: z.string().trim().min(2, t("checkout.errors.city")).max(60),
+    branch: z.string().trim().min(1, t("checkout.errors.branch")).max(120),
+    comment: z.string().trim().max(500, t("checkout.errors.comment")),
+  });
+  const parsed = schema.safeParse({
     fullName: formData.get("fullName") ?? "",
     phone: formData.get("phone") ?? "",
     city: formData.get("city") ?? "",
@@ -55,7 +59,7 @@ export async function placeOrderAction(_prev: CheckoutState, formData: FormData)
     return { fieldErrors };
   }
   const phone = normalizePhone(parsed.data.phone);
-  if (!phone) return { fieldErrors: { phone: "Введіть український номер, напр. 067 123 45 67" } };
+  if (!phone) return { fieldErrors: { phone: t("checkout.errors.phoneFormat") } };
 
   const paymentMethod = formData.get("paymentMethod") === "cod" ? "cod" : "card_demo";
   const promoRaw = String(formData.get("promoCode") ?? "").trim().toUpperCase();
@@ -70,7 +74,7 @@ export async function placeOrderAction(_prev: CheckoutState, formData: FormData)
     });
     orderIds = orders.map((o) => o.id);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Не вдалося оформити замовлення." };
+    return { error: localizeError(translator, e, "checkout.errors.failed") };
   }
 
   try {
@@ -83,11 +87,12 @@ export async function placeOrderAction(_prev: CheckoutState, formData: FormData)
 }
 
 export async function updateOrderStatusAction(orderId: string, status: OrderStatus): Promise<{ error?: string }> {
+  const translator = await getTranslator();
   const { shop } = await requireSeller();
   try {
     await getOrdersRepository().updateStatus(shop.id, orderId, status);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Не вдалося оновити статус" };
+    return { error: localizeError(translator, e, "orders.errors.updateFailed") };
   }
   revalidatePath("/seller/orders");
   revalidatePath("/orders");
