@@ -110,7 +110,6 @@ export const en: Messages = {
   },
   footer: {
     about: "Lavka is a place where Ukrainian makers sell things made by hand. Every piece here has an author's name and a story.",
-    github: "Open source on GitHub",
     categories: "Categories",
     forBuyers: "For buyers",
     forMakers: "For makers",

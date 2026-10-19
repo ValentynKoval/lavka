@@ -133,7 +133,7 @@ Promo codes: `LAVKA10`, `HANDMADE15`, `WELCOME5`.
 
 ## Credits
 
-Photos: [Unsplash](https://unsplash.com) (Unsplash License). Built with Claude Code.
+Photos: [Unsplash](https://unsplash.com) (Unsplash License).
 
 ## License
 

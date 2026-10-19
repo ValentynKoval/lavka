@@ -10,6 +10,8 @@ Owner: Valentyn (GitHub `ValentynKoval`, Vercel `valentyngolf`). Claude writes t
   plurals via `tp()`, dates via `formatDate()`. Repositories throw `AppError("dict.key")`; actions translate with `localizeError()`.
   Taxonomy names come from `getTaxonomy(locale)`. Ukrainian stays the default language; product content is not translated.
 - **Code, comments, README, commit messages: English.**
+- **No `Co-Authored-By` trailers or any AI attribution in commits, PRs, README or the UI** (Valentyn's rule, 2026-10-19).
+- **The site does not link to the GitHub repository** (no "open source" badges in the UI); the repo link lives only in README.
 - **Reports to Valentyn: Russian.**
 
 ## Definition of done (every round)
