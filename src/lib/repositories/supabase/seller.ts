@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ProductInput, ShopInput } from "@/lib/types";
 import { slugify } from "@/lib/utils";
+import { paletteTags } from "@/lib/color/palette";
 import type { SellerRepository } from "../types";
 import { mapProduct, mapShop, PRODUCT_SELECT, type ProductRowWithRelations } from "./mappers";
 
@@ -29,6 +30,7 @@ function productPayload(input: ProductInput) {
     stock: input.stock,
     status: input.status,
     tags: input.tags,
+    ...(input.palette ? { palette: input.palette, color_tags: paletteTags(input.palette) } : {}),
   };
 }
 

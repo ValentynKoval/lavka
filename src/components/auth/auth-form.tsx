@@ -7,16 +7,18 @@ import { useT } from "@/i18n/client";
 import { signInAction, signUpAction, type AuthFormState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
+import { DemoLogin } from "./demo-login";
 
 interface AuthFormProps {
   mode: "login" | "register";
   next?: string;
-  demo: boolean;
+  /** Kept for the page props; the quick-login cards show in every data mode. */
+  demo?: boolean;
 }
 
 const initial: AuthFormState = {};
 
-export function AuthForm({ mode, next, demo }: AuthFormProps) {
+export function AuthForm({ mode, next }: AuthFormProps) {
   const { t } = useT();
   const isLogin = mode === "login";
   const [state, action, pending] = useActionState(isLogin ? signInAction : signUpAction, initial);
@@ -43,12 +45,7 @@ export function AuthForm({ mode, next, demo }: AuthFormProps) {
           </Link>
         </p>
 
-        {demo && (
-          <div className="mt-6 rounded-2xl border border-sand-400/40 bg-[#fbf3e2] px-4 py-3 text-sm text-[#7a5410]">
-            <p className="font-semibold">{t("auth.demoTitle")}</p>
-            <p className="mt-1">{t("auth.demoText", { email: "olena@lavka.demo", password: "demo1234" })}</p>
-          </div>
-        )}
+        {isLogin && <DemoLogin next={next} className="mt-6" />}
 
         <form action={action} className="mt-8 space-y-5" noValidate>
           {next && <input type="hidden" name="next" value={next} />}

@@ -37,6 +37,7 @@ export async function Footer() {
             <li><Link href="/shops" className={link}>{t("nav.makers")}</Link></li>
             <li><Link href="/favorites" className={link}>{t("nav.favorites")}</Link></li>
             <li><Link href="/cart" className={link}>{t("nav.cart")}</Link></li>
+            <li><Link href="/gift-finder" className={link}>{t("nav.gifts")}</Link></li>
           </ul>
         </div>
         <div>
@@ -45,6 +46,7 @@ export async function Footer() {
             <li><Link href="/seller" className={link}>{t("nav.sellerCabinet")}</Link></li>
             <li><Link href="/seller/onboarding" className={link}>{t("nav.openShop")}</Link></li>
             <li><Link href="/register" className={link}>{t("meta.register")}</Link></li>
+            <li><Link href="/about" className={link}>{t("nav.about")}</Link></li>
           </ul>
         </div>
       </div>

@@ -24,6 +24,7 @@ export function Gallery({ images, title }: { images: ProductImage[]; title: stri
   return (
     <div className="flex flex-col gap-3 lg:flex-row-reverse lg:gap-4">
       <div
+        data-product-image
         className="group/zoom relative aspect-square flex-1 cursor-zoom-in overflow-hidden rounded-3xl bg-linen-200 shadow-card"
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();

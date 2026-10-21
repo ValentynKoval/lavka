@@ -27,8 +27,22 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
   const region = product.shop ? getTaxonomy(locale).regionBySlug(product.shop.regionSlug)?.name : undefined;
 
   return (
-    <article className={cn("group relative flex flex-col", className)}>
-      <Link href={`/product/${product.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-linen-200 shadow-card transition-shadow duration-300 group-hover:shadow-card-hover">
+    <article
+      className={cn("group relative flex flex-col", className)}
+      onPointerMove={(e) => {
+        if (e.pointerType !== "mouse") return;
+        const r = e.currentTarget.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        e.currentTarget.style.setProperty("--tilt-y", `${(px * 7).toFixed(2)}deg`);
+        e.currentTarget.style.setProperty("--tilt-x", `${(-py * 7).toFixed(2)}deg`);
+      }}
+      onPointerLeave={(e) => {
+        e.currentTarget.style.removeProperty("--tilt-x");
+        e.currentTarget.style.removeProperty("--tilt-y");
+      }}
+    >
+      <Link href={`/product/${product.slug}`} className="tilt relative block aspect-[4/5] overflow-hidden rounded-2xl bg-linen-200 shadow-card transition-shadow duration-300 group-hover:shadow-card-hover">
         {cover ? (
           <>
             <Image src={cover.url} alt={cover.alt} fill priority={priority} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw" className={cn("object-cover transition-all duration-500 group-hover:scale-[1.03]", hover && "group-hover:opacity-0", soldOut && "saturate-50")} />

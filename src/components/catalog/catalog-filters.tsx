@@ -5,6 +5,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { getTaxonomy } from "@/data/taxonomy-i18n";
 import { useT } from "@/i18n/client";
 import type { CatalogFilters as Filters } from "@/lib/types";
+import { COLOR_SWATCH, COLOR_TAGS } from "@/lib/color/palette";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Input } from "@/components/ui/input";
@@ -94,6 +95,31 @@ export function CatalogFilters({ filters, bounds, activeCount }: CatalogFiltersP
           <Input type="number" inputMode="numeric" min={0} placeholder={String(Math.ceil(bounds.max / 100))} value={priceMax} onChange={(e) => setPriceMax(e.target.value)} onBlur={applyPrice} onKeyDown={(e) => e.key === "Enter" && applyPrice()} aria-label={t("catalog.priceTo")} className="h-10" />
         </div>
         <Checkbox label={t("catalog.inStockOnly")} checked={Boolean(filters.inStock)} onChange={(e) => navigate({ ...filters, inStock: e.target.checked })} className="pt-1" />
+      </FilterGroup>
+
+      <FilterGroup title={t("catalog.filterColor")}>
+        <div className="flex flex-wrap gap-2.5" role="group" aria-label={t("catalog.filterColor")}>
+          {COLOR_TAGS.map((tag) => {
+            const active = filters.colors?.includes(tag) ?? false;
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => navigate({ ...filters, colors: toggleIn(filters.colors, tag) })}
+                aria-pressed={active}
+                title={t(`colors.names.${tag}`)}
+                aria-label={t(`colors.names.${tag}`)}
+                className={cn("relative h-8 w-8 rounded-full ring-1 ring-ink-900/15 transition-all hover:scale-110", active && "scale-110 ring-2 ring-ink-900 ring-offset-2 ring-offset-linen-50")}
+                style={{ backgroundColor: COLOR_SWATCH[tag] }}
+              >
+                {active && <span className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color: tag === "white" || tag === "beige" || tag === "yellow" ? "#2b2622" : "#fbf8f3" }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+        {filters.colors && filters.colors.length > 0 && (
+          <p className="pt-1 text-xs text-ink-500">{filters.colors.map((c) => t(`colors.names.${c}`)).join(", ")}</p>
+        )}
       </FilterGroup>
 
       <FilterGroup title={t("catalog.filterMaterial")}>

@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getChatRepository, isDemoMode } from "@/lib/repositories";
 import { WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/components/layout/theme-toggle";
 import { I18nProvider } from "@/i18n/client";
 import { OG_LOCALE } from "@/i18n/config";
@@ -52,6 +53,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale} messages={getMessages(locale)}>
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           <Suspense fallback={<div className="h-16 lg:h-[72px]" />}>
             <Header user={user} demo={isDemoMode()} unread={unread} />
           </Suspense>

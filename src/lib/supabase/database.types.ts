@@ -49,6 +49,8 @@ export type ProductRow = {
   status: ProductStatusRow;
   tags: string[];
   is_featured: boolean;
+  palette: string[];
+  color_tags: string[];
   created_at: string;
   updated_at: string;
 };

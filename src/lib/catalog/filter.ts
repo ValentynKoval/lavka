@@ -44,6 +44,9 @@ export function matchesFilters(product: Product, filters: CatalogFilters): boole
   if (filters.priceMin !== undefined && product.price < filters.priceMin) return false;
   if (filters.priceMax !== undefined && product.price > filters.priceMax) return false;
   if (filters.inStock && product.stock <= 0) return false;
+  if (filters.colors && filters.colors.length > 0) {
+    if (!filters.colors.some((c) => product.colorTags.includes(c))) return false;
+  }
   return matchesQuery(product, filters.query);
 }
 

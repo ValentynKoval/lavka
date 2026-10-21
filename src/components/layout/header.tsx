@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart, MessageCircle, ShoppingBag, Store } from "lucide-react";
+import { Gift, Heart, MessageCircle, ShoppingBag, Store } from "lucide-react";
 import { getTaxonomy } from "@/data/taxonomy-i18n";
 import { getTranslator } from "@/i18n/server";
 import type { Profile } from "@/lib/types";
@@ -34,6 +34,9 @@ export async function Header({ user, demo, unread = 0 }: { user: Profile | null;
         <nav className="hidden items-center gap-1 lg:flex" aria-label={t("nav.mainMenu")}>
           <Link href="/catalog" className={navLink}>{t("nav.catalog")}</Link>
           <Link href="/shops" className={navLink}>{t("nav.makers")}</Link>
+          <Link href="/gift-finder" className={`inline-flex items-center gap-1.5 ${navLink}`}>
+            <Gift className="h-4 w-4" /> {t("nav.gifts")}
+          </Link>
           <Link href="/seller" className={`inline-flex items-center gap-1.5 ${navLink}`}>
             <Store className="h-4 w-4" /> {t("nav.sell")}
           </Link>
@@ -59,7 +62,7 @@ export async function Header({ user, demo, unread = 0 }: { user: Profile | null;
               )}
             </Link>
           )}
-          <Link href="/cart" className={iconLink} aria-label={t("nav.cart")}>
+          <Link href="/cart" className={iconLink} aria-label={t("nav.cart")} data-cart-icon>
             <ShoppingBag className="h-5 w-5" />
             <CartBadge />
           </Link>

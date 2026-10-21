@@ -6,6 +6,7 @@ import { getOrdersRepository } from "@/lib/repositories";
 import { OrderCard } from "@/components/orders/order-card";
 import { Button } from "@/components/ui/button";
 import { ClearCartOnMount } from "@/components/checkout/clear-cart";
+import { Confetti } from "@/components/ui/confetti";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getTranslator();
@@ -23,6 +24,7 @@ export default async function OrderSuccessPage({ searchParams }: PageProps<"/ord
   return (
     <div className="container-page py-12 sm:py-16">
       <ClearCartOnMount />
+      <Confetti />
       <div className="mx-auto max-w-2xl text-center">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-moss-100 text-moss-600">
           <PartyPopper className="h-7 w-7" />

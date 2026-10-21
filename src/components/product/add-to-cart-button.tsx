@@ -7,6 +7,7 @@ import { useCartStore } from "@/lib/stores/cart-store";
 import { syncCartLineAction } from "@/lib/user-data/actions";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
+import { flyToCart } from "@/lib/fly-to-cart";
 import type { Product } from "@/lib/types";
 
 export function AddToCartButton({ product }: { product: Product }) {
@@ -25,6 +26,7 @@ export function AddToCartButton({ product }: { product: Product }) {
     }
     const quantity = Math.min(qty, maxAdd);
     add(product.id, quantity, product.stock);
+    flyToCart();
     void syncCartLineAction(product.id, inCart + quantity).catch(() => undefined);
     setAdded(true);
     toast.success(t("product.addedToCart"));

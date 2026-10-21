@@ -56,3 +56,25 @@ export async function signOutAction() {
   await getAuthService().signOut();
   redirect("/");
 }
+
+const DEMO_ACCOUNTS = {
+  buyer: "buyer@lavka.demo",
+  seller: "olena@lavka.demo",
+  admin: "admin@lavka.demo",
+} as const;
+
+export type DemoRole = keyof typeof DEMO_ACCOUNTS;
+
+/**
+ * One-click sign-in for the portfolio demo. The accounts and the shared password are
+ * public (README), so this only saves visitors the typing. Lands each role on its home.
+ */
+export async function demoSignInAction(role: DemoRole, next?: string): Promise<AuthFormState> {
+  const { t } = await getTranslator();
+  const email = DEMO_ACCOUNTS[role];
+  if (!email) return { error: t("auth.errors.invalidCredentials") };
+  const result = await getAuthService().signIn(email, "demo1234");
+  if (result.error) return { error: t(result.error) };
+  const home = role === "seller" ? "/seller" : role === "admin" ? "/admin" : "/orders";
+  redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : home);
+}

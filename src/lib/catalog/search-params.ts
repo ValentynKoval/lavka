@@ -38,6 +38,7 @@ export function parseCatalogFilters(params: SearchParamsInput): CatalogFilters {
     priceMin: priceMin === undefined ? undefined : priceMin * 100,
     priceMax: priceMax === undefined ? undefined : priceMax * 100,
     inStock: get(params, "stock") === "1",
+    colors: getList(params, "color"),
     sort: sort && (SORTS as string[]).includes(sort) ? (sort as SortOption) : "popular",
     page: toInt(get(params, "page")) || 1,
   };
@@ -53,6 +54,7 @@ export function buildCatalogQuery(filters: CatalogFilters): string {
   if (filters.priceMin !== undefined) params.set("min", String(Math.round(filters.priceMin / 100)));
   if (filters.priceMax !== undefined) params.set("max", String(Math.round(filters.priceMax / 100)));
   if (filters.inStock) params.set("stock", "1");
+  if (filters.colors?.length) params.set("color", filters.colors.join(","));
   if (filters.sort && filters.sort !== "popular") params.set("sort", filters.sort);
   if (filters.page && filters.page > 1) params.set("page", String(filters.page));
   return params.toString();
@@ -65,5 +67,6 @@ export function countActiveFilters(filters: CatalogFilters): number {
   n += filters.regions?.length ?? 0;
   if (filters.priceMin !== undefined || filters.priceMax !== undefined) n++;
   if (filters.inStock) n++;
+  n += filters.colors?.length ?? 0;
   return n;
 }

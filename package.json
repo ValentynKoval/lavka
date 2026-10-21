@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "demo:images": "node scripts/download-demo-images.mjs",
+    "demo:palettes": "node scripts/extract-demo-palettes.mjs",
     "db:seed": "tsx --env-file=.env.local supabase/seed.ts",
     "dev:demo": "cross-env LAVKA_DATA_SOURCE=demo next dev",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
@@ -24,6 +25,8 @@
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7",
     "zustand": "^5.0.15"

@@ -9,6 +9,8 @@ export interface CatalogRepository {
   getFeaturedProducts(limit: number): Promise<Product[]>;
   getNewProducts(limit: number): Promise<Product[]>;
   getRelatedProducts(product: Product, limit: number): Promise<Product[]>;
+  /** Products from other shops whose palette is closest to this one. */
+  getSimilarByColor(product: Product, limit: number): Promise<Product[]>;
   getPriceBounds(): Promise<{ min: number; max: number }>;
   listShops(): Promise<Shop[]>;
   getShopBySlug(slug: string): Promise<Shop | null>;

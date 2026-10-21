@@ -1,4 +1,5 @@
 import { applyCatalogFilters, priceBounds, sortProducts } from "@/lib/catalog/filter";
+import { rankByPalette } from "@/lib/color/similar";
 import { ratingSummary } from "@/lib/stats/aggregate";
 import type { CatalogFilters, Product, Shop } from "@/lib/types";
 import type { CatalogRepository } from "../types";
@@ -49,6 +50,9 @@ export const mockCatalogRepository: CatalogRepository = {
       (p) => p.id !== product.id && (p.categorySlug === product.categorySlug || p.shopId === product.shopId),
     );
     return sortProducts(sameCategory, "popular").slice(0, limit);
+  },
+  async getSimilarByColor(product, limit) {
+    return rankByPalette(product, activeProducts(), limit);
   },
   async getPriceBounds() {
     return priceBounds(allProducts());

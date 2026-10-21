@@ -1,4 +1,5 @@
 import { applyCatalogFilters, PAGE_SIZE, sortProducts } from "@/lib/catalog/filter";
+import { rankByPalette } from "@/lib/color/similar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { CatalogFilters, Product } from "@/lib/types";
 import type { CatalogRepository } from "../types";
@@ -22,6 +23,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
     if (filters.priceMin !== undefined) query = query.gte("price", filters.priceMin);
     if (filters.priceMax !== undefined) query = query.lte("price", filters.priceMax);
     if (filters.inStock) query = query.gt("stock", 0);
+    if (filters.colors?.length) query = query.overlaps("color_tags", filters.colors);
     if (filters.regions?.length) query = query.in("shops.region_slug", filters.regions);
     const { data, error } = await query;
     if (error) throw new Error(error.message);
@@ -80,6 +82,19 @@ export const supabaseCatalogRepository: CatalogRepository = {
       .limit(PAGE_SIZE);
     if (error) throw new Error(error.message);
     return sortProducts((data as unknown as ProductRowWithRelations[]).map(mapProduct), "popular").slice(0, limit);
+  },
+  async getSimilarByColor(product, limit) {
+    if (product.colorTags.length === 0) return [];
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(PRODUCT_SELECT).eq("shops.is_hidden", false)
+      .eq("status", "active")
+      .neq("id", product.id)
+      .overlaps("color_tags", product.colorTags)
+      .limit(60);
+    if (error) throw new Error(error.message);
+    return rankByPalette(product, (data as unknown as ProductRowWithRelations[]).map(mapProduct), limit);
   },
   async getPriceBounds() {
     const supabase = await createSupabaseServerClient();

@@ -1,4 +1,8 @@
+import { paletteTags } from "@/lib/color/palette";
 import type { Product, ProductStatus, Shop, UserRole } from "@/lib/types";
+import palettes from "./demo-palettes.json";
+
+const PALETTES: Record<string, string[]> = palettes;
 
 /**
  * Demo data: 10 shops and 50+ products with Ukrainian copy.
@@ -592,6 +596,7 @@ function isoDaysAgo(days: number): string {
 
 export const DEMO_PRODUCTS: Product[] = seeds.map((s) => {
   const createdAt = isoDaysAgo(s.daysAgo);
+  const palette = (PALETTES[s.images[0]] ?? []).slice(0, 4);
   return {
     id: s.id,
     shopId: s.shopId,
@@ -607,6 +612,8 @@ export const DEMO_PRODUCTS: Product[] = seeds.map((s) => {
     images: s.images.map((name, i) => ({ id: `${s.id}-img-${i}`, url: img(name), alt: s.title, sortOrder: i })),
     tags: s.tags,
     isFeatured: s.featured ?? false,
+    palette,
+    colorTags: paletteTags(palette),
     createdAt,
     updatedAt: createdAt,
   };

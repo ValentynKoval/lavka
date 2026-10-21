@@ -1,0 +1,596 @@
+{
+  "aquarelle-fox-1": [
+    "#f4f4f2",
+    "#e99932",
+    "#e14f1a",
+    "#ead49b"
+  ],
+  "aquarelle-garden-1": [
+    "#8d987b",
+    "#b7bc97",
+    "#dedbb9",
+    "#657a60"
+  ],
+  "aquarelle-pines-1": [
+    "#e1ddd2",
+    "#7b9bae",
+    "#9da470",
+    "#637f69"
+  ],
+  "aquarelle-tulips-1": [
+    "#c1bead",
+    "#576f60",
+    "#94786e"
+  ],
+  "aquarelle-venice-1": [
+    "#bfb39a",
+    "#eae1c9",
+    "#918a76",
+    "#d4d0b8"
+  ],
+  "bag-backpack-1": [
+    "#d4d9d8",
+    "#472518",
+    "#7e5d52",
+    "#81452f"
+  ],
+  "bag-satchel-1": [
+    "#4e1907",
+    "#615347",
+    "#aa653e",
+    "#83786d"
+  ],
+  "bag-satchel-2": [
+    "#d1d2d1",
+    "#924c2f",
+    "#f0f0ee",
+    "#512a1e"
+  ],
+  "bag-tote-1": [
+    "#783717",
+    "#ece4de",
+    "#d2c2b1",
+    "#b29f89"
+  ],
+  "basket-fruit-1": [
+    "#e39b16",
+    "#1977b2",
+    "#723b22",
+    "#945533"
+  ],
+  "basket-plates-1": [
+    "#cccac7",
+    "#917456",
+    "#534235",
+    "#af9f8c"
+  ],
+  "basket-wicker-1": [
+    "#4b504c",
+    "#887970",
+    "#b2a195",
+    "#233236"
+  ],
+  "basket-wicker-2": [
+    "#0d0d0d",
+    "#3c3127",
+    "#655745",
+    "#a1947c"
+  ],
+  "bedding-grey-1": [
+    "#1f201b",
+    "#3d413c"
+  ],
+  "bedding-grey-2": [
+    "#20221c",
+    "#ebe8eb",
+    "#363c37"
+  ],
+  "blanket-blue-1": [
+    "#1b2333",
+    "#3d3f67",
+    "#04100b",
+    "#55538c"
+  ],
+  "blanket-cream-1": [
+    "#bec0be",
+    "#6a675a",
+    "#e0e4e8",
+    "#3f3d33"
+  ],
+  "blanket-cream-2": [
+    "#c8cac7",
+    "#a0a493",
+    "#63604b",
+    "#83846b"
+  ],
+  "blanket-cream-3": [
+    "#b1b2af"
+  ],
+  "blanket-mustard-1": [
+    "#91581b",
+    "#be8734",
+    "#64360f",
+    "#d9a74e"
+  ],
+  "blankets-set-1": [
+    "#c1c2c1",
+    "#0c5060"
+  ],
+  "board-endgrain-1": [
+    "#d0af93",
+    "#985807",
+    "#bf9267",
+    "#5c2c01"
+  ],
+  "board-endgrain-2": [
+    "#e7e2db",
+    "#ddc6ab",
+    "#dca276",
+    "#a99d82"
+  ],
+  "board-handle-1": [
+    "#bbc3cd",
+    "#ad9b85",
+    "#9b714a",
+    "#8b5627"
+  ],
+  "board-handle-2": [
+    "#fefefe",
+    "#b68653",
+    "#c2a482",
+    "#dedad7"
+  ],
+  "board-round-1": [
+    "#cf8d50",
+    "#15100c",
+    "#2d2f29",
+    "#b06931"
+  ],
+  "board-round-2": [
+    "#ada0b1",
+    "#bc794b",
+    "#e9c4a1",
+    "#d79f6a"
+  ],
+  "boards-set-1": [
+    "#2c271d",
+    "#4c4438",
+    "#be8c5a",
+    "#9d6630"
+  ],
+  "boards-set-2": [
+    "#2f2315",
+    "#61472e",
+    "#b87f3e",
+    "#885d32"
+  ],
+  "bowls-grey-1": [
+    "#b8b5ba",
+    "#705f53",
+    "#473a32",
+    "#857570"
+  ],
+  "bowls-set-1": [
+    "#ccabaa",
+    "#a77c76",
+    "#8a554e",
+    "#39332f"
+  ],
+  "bowls-set-2": [
+    "#ac9074",
+    "#c8bbaf",
+    "#886845",
+    "#614522"
+  ],
+  "bracelet-beads-1": [
+    "#9da39c",
+    "#555e50",
+    "#383c2b"
+  ],
+  "bracelet-stone-1": [
+    "#9b7251",
+    "#6d472d",
+    "#120d05",
+    "#c39472"
+  ],
+  "candle-amber-1": [
+    "#dcd0c6",
+    "#c2b0a1",
+    "#17100a",
+    "#f5f5f3"
+  ],
+  "candle-amber-2": [
+    "#ded9d0",
+    "#2e261e",
+    "#633d17",
+    "#7d746a"
+  ],
+  "candle-amber-3": [
+    "#e1ded7",
+    "#32261b",
+    "#c1b6aa",
+    "#5c4c3b"
+  ],
+  "candle-concrete-1": [
+    "#baa58b",
+    "#9c7c5c",
+    "#775538",
+    "#151619"
+  ],
+  "candle-flowers-1": [
+    "#190f07",
+    "#8f6a42",
+    "#49331e",
+    "#b69262"
+  ],
+  "candle-mint-1": [
+    "#d2e2e0",
+    "#9b9a88",
+    "#dec990"
+  ],
+  "candles-set-1": [
+    "#cbb9ab",
+    "#e5e3de",
+    "#a79382",
+    "#5c524a"
+  ],
+  "candles-set-2": [
+    "#dcd6cb",
+    "#bfb39d",
+    "#18130d",
+    "#8f8778"
+  ],
+  "cardholder-1": [
+    "#725230",
+    "#927246",
+    "#cbbbc2",
+    "#4c3420"
+  ],
+  "cat-art": [
+    "#909b80",
+    "#babe98",
+    "#e5e0bc",
+    "#677d62"
+  ],
+  "cat-candles": [
+    "#c59b6e",
+    "#68401f",
+    "#9a6b40",
+    "#241a14"
+  ],
+  "cat-ceramics": [
+    "#cbbeb2",
+    "#b49578",
+    "#8e6c47",
+    "#624420"
+  ],
+  "cat-home": [
+    "#928f8a",
+    "#dddce2",
+    "#4c5545"
+  ],
+  "cat-jewelry": [
+    "#0d0d0d",
+    "#353535"
+  ],
+  "cat-leather": [
+    "#551b06",
+    "#a9633c",
+    "#624e44",
+    "#1c0202"
+  ],
+  "cat-textile": [
+    "#a8a193",
+    "#cbcac1",
+    "#e5eaea",
+    "#625b50"
+  ],
+  "cat-wood": [
+    "#bbc4cd",
+    "#ae9b85",
+    "#997049",
+    "#8c5829"
+  ],
+  "cups-set-1": [
+    "#e0e3df",
+    "#c5c0ac",
+    "#b09e7f",
+    "#c98e42"
+  ],
+  "earrings-crystal-1": [
+    "#eb90a6",
+    "#b6aca8",
+    "#c56f7b",
+    "#98817f"
+  ],
+  "earrings-drop-1": [
+    "#283036",
+    "#0f1111",
+    "#4b5359"
+  ],
+  "earrings-drop-2": [
+    "#dacab4",
+    "#b0a18f",
+    "#8d7b6c",
+    "#635349"
+  ],
+  "earrings-hoops-1": [
+    "#c3c2c2"
+  ],
+  "earrings-leaf-1": [
+    "#090a0b",
+    "#222328"
+  ],
+  "earrings-turquoise-1": [
+    "#efefe4",
+    "#c9c3ad",
+    "#a2a088",
+    "#437d69"
+  ],
+  "embroidery-kit-1": [
+    "#e0ded7",
+    "#c4beb3",
+    "#a49a8c",
+    "#8a8271"
+  ],
+  "hoop-flowers-1": [
+    "#beb7a9",
+    "#99937d",
+    "#776e51",
+    "#49422a"
+  ],
+  "hoop-poppy-1": [
+    "#d2cac0",
+    "#7f6e5c",
+    "#1c140a",
+    "#b5a897"
+  ],
+  "hoop-sunflower-1": [
+    "#909085",
+    "#383423",
+    "#8a4d10",
+    "#a17f31"
+  ],
+  "hoop-wreath-1": [
+    "#bebbb2",
+    "#a69886",
+    "#817a61",
+    "#675631"
+  ],
+  "hoop-wreath-2": [
+    "#9c8f77",
+    "#bec0b4",
+    "#686457",
+    "#d9e0d3"
+  ],
+  "macrame-planter-1": [
+    "#918e89",
+    "#dddce2",
+    "#495242"
+  ],
+  "macrame-planter-2": [
+    "#e5dbca",
+    "#cbb495",
+    "#af956e",
+    "#7e6b41"
+  ],
+  "macrame-wall-1": [
+    "#b5b5b4",
+    "#a59480",
+    "#8e775e"
+  ],
+  "macrame-wall-2": [
+    "#928f80",
+    "#6e6c5a",
+    "#494634"
+  ],
+  "mug-blue-1": [
+    "#4ad2f8",
+    "#383e38",
+    "#0f1a22",
+    "#134560"
+  ],
+  "mug-dots-1": [
+    "#aaa79c",
+    "#cfcabc",
+    "#8e8878"
+  ],
+  "mug-mustard-1": [
+    "#c6cad4",
+    "#705e07",
+    "#f1efba",
+    "#ad9c38"
+  ],
+  "mug-mustard-2": [
+    "#d2d3d6",
+    "#594a0c",
+    "#d2c879",
+    "#ebebca"
+  ],
+  "mug-white-1": [
+    "#abaa9e",
+    "#cbcbbc",
+    "#e3e8db"
+  ],
+  "mug-white-2": [
+    "#d7dcdf",
+    "#9d7a5f",
+    "#6d5648",
+    "#31393a"
+  ],
+  "necklace-pearl-1": [
+    "#75387f",
+    "#481948",
+    "#ad79be",
+    "#a1899d"
+  ],
+  "pillars-1": [
+    "#0f0800",
+    "#5a2b05",
+    "#93551b",
+    "#d7904e"
+  ],
+  "pillow-tassels-1": [
+    "#e4dbd8",
+    "#4e3810",
+    "#9d8a73",
+    "#c2b7ad"
+  ],
+  "pillow-tassels-2": [
+    "#ceb9a2",
+    "#a69375",
+    "#806f50",
+    "#56512c"
+  ],
+  "pillow-terracotta-1": [
+    "#b5b5b0",
+    "#958e81",
+    "#786852",
+    "#5a3e25"
+  ],
+  "pillow-terracotta-2": [
+    "#8b8b84",
+    "#2e1a0c",
+    "#953f0f",
+    "#61594a"
+  ],
+  "pillow-terracotta-3": [
+    "#b7b7b3",
+    "#51220b",
+    "#9d9384",
+    "#a75720"
+  ],
+  "pouf-1": [
+    "#ac9782",
+    "#816343",
+    "#5e4323",
+    "#bfb4a5"
+  ],
+  "print-shapes-1": [
+    "#989496",
+    "#702b04"
+  ],
+  "print-wave-1": [
+    "#fafbf5",
+    "#da6189",
+    "#8bb0d0",
+    "#323026"
+  ],
+  "snood-1": [
+    "#413527",
+    "#805c35",
+    "#13110d"
+  ],
+  "spoon-walnut-1": [
+    "#595a5b",
+    "#363536",
+    "#301a0f",
+    "#d89a54"
+  ],
+  "spoon-walnut-2": [
+    "#555658",
+    "#332c2b",
+    "#130c09",
+    "#d18f65"
+  ],
+  "spoons-set-1": [
+    "#cdcabf",
+    "#e5e3d8",
+    "#593f29",
+    "#dfaf72"
+  ],
+  "spoons-set-2": [
+    "#28281e",
+    "#524d3e",
+    "#7e7460",
+    "#050701"
+  ],
+  "sweater-1": [
+    "#241c15",
+    "#514031",
+    "#82694e",
+    "#e9dbba"
+  ],
+  "tealights-1": [
+    "#e1d2c2",
+    "#bca892",
+    "#4e3a24",
+    "#937e66"
+  ],
+  "towels-1": [
+    "#251f19",
+    "#97a5ac",
+    "#78715c",
+    "#77838f"
+  ],
+  "toy-animals-1": [
+    "#f2f00f",
+    "#7b631c",
+    "#c5b910"
+  ],
+  "toy-clown-1": [
+    "#baa48d",
+    "#7e573d",
+    "#c92720",
+    "#997f69"
+  ],
+  "toy-pyramid-1": [
+    "#70797a",
+    "#abb6bb",
+    "#b20101"
+  ],
+  "toy-pyramid-2": [
+    "#989487",
+    "#a23232",
+    "#63a09d",
+    "#90903e"
+  ],
+  "toy-rocket-1": [
+    "#9792a2",
+    "#9a7b69",
+    "#c29576",
+    "#789def"
+  ],
+  "vase-black-1": [
+    "#5e3d1e",
+    "#150d02",
+    "#37230e"
+  ],
+  "vase-teal-1": [
+    "#efefef",
+    "#0b2a34"
+  ],
+  "vases-sand-1": [
+    "#b4af9f",
+    "#8d836c",
+    "#594a38",
+    "#d0cec6"
+  ],
+  "vases-sand-2": [
+    "#aba694",
+    "#8f8974",
+    "#6f634d",
+    "#4b3d2d"
+  ],
+  "wallet-black-1": [
+    "#c9ccce",
+    "#1e1f1c"
+  ],
+  "wallet-black-2": [
+    "#a3a5a5",
+    "#3b4547",
+    "#151d1f"
+  ],
+  "wallet-brown-1": [
+    "#af5e2d",
+    "#c09066",
+    "#e1b48b",
+    "#443d2f"
+  ],
+  "wallet-brown-2": [
+    "#090a0b",
+    "#2e3133",
+    "#957363",
+    "#5c524d"
+  ]
+}

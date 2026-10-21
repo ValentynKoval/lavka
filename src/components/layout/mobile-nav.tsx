@@ -55,6 +55,7 @@ export function MobileNav({ user }: { user: Profile | null }) {
               <div className="space-y-1">
                 <Link href="/catalog" className={item}>{t("nav.catalog")}</Link>
                 <Link href="/shops" className={item}>{t("nav.makers")}</Link>
+                <Link href="/gift-finder" className={item}>{t("nav.gifts")}</Link>
                 <Link href="/favorites" className={item}>{t("nav.favorites")}</Link>
                 <Link href="/cart" className={item}>{t("nav.cart")}</Link>
                 {user && <Link href="/orders" className={item}>{t("nav.orders")}</Link>}

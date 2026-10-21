@@ -71,6 +71,10 @@ export interface Product {
   images: ProductImage[];
   tags: string[];
   isFeatured: boolean;
+  /** Up to four dominant colours of the first photo (hex), extracted on save. */
+  palette: string[];
+  /** Coarse colour tags derived from the palette; powers "shop by colour". */
+  colorTags: string[];
   createdAt: string;
   updatedAt: string;
   /** Denormalised shop info for cards and lists. */
@@ -98,6 +102,7 @@ export interface CatalogFilters {
   priceMin?: number;
   priceMax?: number;
   inStock?: boolean;
+  colors?: string[];
   sort?: SortOption;
   page?: number;
 }
@@ -113,6 +118,8 @@ export interface ProductInput {
   status: ProductStatus;
   tags: string[];
   images: { url: string; alt: string }[];
+  /** Filled by the server action from the first image; sellers never type colours. */
+  palette?: string[];
 }
 
 export interface ShopInput {

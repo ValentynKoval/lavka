@@ -1,6 +1,7 @@
 import { AppError } from "@/lib/errors";
 import { slugify } from "@/lib/utils";
 import type { Product, ProductInput, Shop } from "@/lib/types";
+import { paletteTags } from "@/lib/color/palette";
 import type { SellerRepository } from "../types";
 import { getMockState, newId } from "./store";
 
@@ -25,6 +26,8 @@ function applyInput(product: Product, input: ProductInput): Product {
     status: input.status,
     tags: input.tags,
     images: input.images.map((img, i) => ({ id: newId("img"), url: img.url, alt: img.alt, sortOrder: i })),
+    palette: input.palette ?? product.palette,
+    colorTags: paletteTags(input.palette ?? product.palette),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -81,6 +84,8 @@ export const mockSellerRepository: SellerRepository = {
       images: [],
       tags: [],
       isFeatured: false,
+      palette: [],
+      colorTags: [],
       createdAt: now,
       updatedAt: now,
     };

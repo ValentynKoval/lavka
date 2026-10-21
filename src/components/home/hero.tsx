@@ -6,7 +6,7 @@ import type { Product } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 
-export async function Hero({ heroProducts, shopCount }: { heroProducts: Product[]; shopCount: number }) {
+export async function Hero({ heroProducts, shopCount, productCount }: { heroProducts: Product[]; shopCount: number; productCount?: number }) {
   const { t } = await getTranslator();
   const [main, second, third] = heroProducts;
   return (
@@ -35,7 +35,7 @@ export async function Hero({ heroProducts, shopCount }: { heroProducts: Product[
           </div>
           <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-ink-900/10 pt-6">
             {[
-              ["60+", t("home.statProducts")],
+              [productCount ? String(productCount) : "60+", t("home.statProducts")],
               [`${shopCount}`, t("home.statShops")],
               ["8", t("home.statCrafts")],
             ].map(([value, label]) => (

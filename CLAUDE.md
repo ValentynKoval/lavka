@@ -43,6 +43,8 @@ Stage 1 (done): catalog, search & filters, product page, shop page, favourites, 
 Stage 2 (done 2026-10-18): checkout and orders (demo payment, no Stripe), reviews, chat with Supabase Realtime, admin panel,
 seller analytics, command palette, dark mode, OG images, sitemap/robots/JSON-LD.
 Stage 3 (done 2026-10-18): UI in three languages (UA/EN/RU) with a cookie-based locale switcher.
+Stage 4 (done 2026-10-21): shop by colour (server-side palette extraction), gift finder, interactive makers map, Realtime Presence
+viewer counter, /about page with one-click demo sign-in, motion polish (reveal, tilt, fly-to-cart, confetti, progress bar).
 Not planned unless asked: real payments (Stripe), e-mail notifications, shipping APIs, translated product content.
 
 ## Stage 2 conventions
@@ -51,3 +53,15 @@ Not planned unless asked: real payments (Stripe), e-mail notifications, shipping
 - Demo stage-2 data (reviews, orders, views, chat) is generated deterministically in `src/data/demo-stage2.ts`; the seed and demo mode share it.
 - Dark mode works by overriding design tokens under `:root[data-theme="dark"]`; add new colours as tokens, not hard-coded hex, so both themes stay in sync.
 - Charts are plain SVG in `src/components/charts/charts.tsx`; no chart library.
+
+## Stage 4 conventions
+
+- Product colours are derived, never typed: `saveProductAction` runs `extractPaletteFromUrl` (sharp) on the first image and stores
+  `palette` (hex) + `color_tags` (from `colorTag()` in `src/lib/color/palette.ts`). Demo palettes live in `src/data/demo-palettes.json`
+  (`npm run demo:palettes` regenerates them; keep `scripts/extract-demo-palettes.mjs` in sync with `quantize()`).
+- Colour tags are a closed list (`COLOR_TAGS`); adding one means a dictionary entry in all three locales and a swatch in `COLOR_SWATCH`.
+- The makers map is hand-made SVG (`src/data/ukraine-map.ts`): a simplified outline plus one anchor per taxonomy region. A new region
+  needs an anchor there or it will not appear on the map (there is a test for this).
+- Gift finder logic is pure (`src/lib/gifts/finder.ts`): recipient → categories, occasion → tags, style → colour tags + materials.
+- Motion: every decorative effect (Reveal, tilt, fly-to-cart, confetti, CountUp) must stay inert under `prefers-reduced-motion`.
+- Demo sign-in (`demoSignInAction`) is intentional for the portfolio: the accounts and password are public in the README.

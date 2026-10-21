@@ -22,6 +22,9 @@ export function ActiveFilters({ filters }: { filters: CatalogFilters }) {
   for (const r of filters.regions ?? []) {
     chips.push({ key: `r-${r}`, label: taxonomy.regionName(r), remove: () => navigate({ ...filters, regions: filters.regions?.filter((x) => x !== r) }) });
   }
+  for (const c of filters.colors ?? []) {
+    chips.push({ key: `c-${c}`, label: t(`colors.names.${c}`), remove: () => navigate({ ...filters, colors: filters.colors?.filter((x) => x !== c) }) });
+  }
   if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
     const from = filters.priceMin !== undefined ? t("catalog.priceFromShort", { value: formatPrice(filters.priceMin) }) : "";
     const to = filters.priceMax !== undefined ? t("catalog.priceToShort", { value: formatPrice(filters.priceMax) }) : "";

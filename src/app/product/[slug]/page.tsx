@@ -19,6 +19,8 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
+import { PaletteStrip } from "@/components/product/palette-strip";
+import { LiveViewers } from "@/components/product/live-viewers";
 
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { t } = await getTranslator();
@@ -40,8 +42,9 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const product = await repo.getProductBySlug(slug);
   if (!product) notFound();
 
-  const [related, shop, user] = await Promise.all([
+  const [related, similar, shop, user] = await Promise.all([
     repo.getRelatedProducts(product, 4),
+    repo.getSimilarByColor(product, 4),
     product.shop ? repo.getShopBySlug(product.shop.slug) : Promise.resolve(null),
     getCurrentUser(),
   ]);
@@ -79,6 +82,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
             {product.stock <= 0 ? <Badge tone="ink">{t("product.soldOut")}</Badge> : lowStock ? <Badge tone="danger">{t("product.lowStock", { n: product.stock })}</Badge> : <Badge tone="moss">{t("product.inStock")}</Badge>}
           </div>
           <h1 className="mt-4 text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">{product.title}</h1>
+          <LiveViewers productId={product.id} />
           {product.rating && (
             <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-sm text-ink-500 hover:text-clay-600">
               <RatingStars value={product.rating.average} size="md" showValue />
@@ -139,6 +143,8 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
             </div>
           </dl>
 
+          <PaletteStrip palette={product.palette} className="mt-4" />
+
           <ul className="mt-6 grid gap-3 text-sm text-ink-700 sm:grid-cols-3">
             <li className="flex items-start gap-2"><Truck className="mt-0.5 h-4 w-4 shrink-0 text-moss-500" /> {t("product.delivery")}</li>
             <li className="flex items-start gap-2"><PackageCheck className="mt-0.5 h-4 w-4 shrink-0 text-moss-500" /> {t("product.packaging")}</li>
@@ -180,6 +186,12 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         <section className="mt-20">
           <SectionHeading eyebrow={t("product.relatedEyebrow")} title={t("product.relatedTitle")} href={category ? `/catalog?category=${category.slug}` : "/catalog"} />
           <ProductGrid products={related} />
+        </section>
+      )}
+      {similar.length > 0 && (
+        <section className="mt-20">
+          <SectionHeading eyebrow={t("colors.similarEyebrow")} title={t("colors.similarTitle")} description={t("colors.similarText")} href={product.colorTags[0] ? `/catalog?color=${product.colorTags[0]}` : "/catalog"} />
+          <ProductGrid products={similar} />
         </section>
       )}
       <RecentlyViewed excludeId={product.id} />

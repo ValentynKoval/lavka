@@ -14,9 +14,15 @@ describe("parseCatalogFilters", () => {
       priceMin: 10000,
       priceMax: 200000,
       inStock: true,
+      colors: [],
       sort: "price-asc",
       page: 3,
     });
+  });
+  it("parses and serialises colour tags", () => {
+    const filters = parseCatalogFilters(new URLSearchParams("color=terracotta,green"));
+    expect(filters.colors).toEqual(["terracotta", "green"]);
+    expect(buildCatalogQuery(filters)).toBe("color=terracotta%2Cgreen");
   });
   it("accepts Next.js searchParams objects with repeated keys", () => {
     const filters = parseCatalogFilters({ material: ["clay", "oak,ash"], page: "2" });
