@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Heart, LogOut, MessageCircle, Package, Receipt, ShieldCheck, Store, User as UserIcon } from "lucide-react";
+import { Heart, LogOut, MessageCircle, Package, Receipt, ShieldCheck, Store, User as UserIcon, Bookmark, Hammer } from "lucide-react";
 import { useT } from "@/i18n/client";
 import type { Profile } from "@/lib/types";
 import { signOutAction } from "@/lib/auth/actions";
@@ -79,6 +79,12 @@ export function UserMenu({ user }: { user: Profile | null }) {
           </Link>
           <Link href="/favorites" role="menuitem" onClick={() => setOpen(false)} className={item}>
             <Heart className="h-4 w-4" /> {t("nav.favorites")}
+          </Link>
+          <Link href="/collections" role="menuitem" onClick={() => setOpen(false)} className={item}>
+            <Bookmark className="h-4 w-4" /> {t("nav.collections")}
+          </Link>
+          <Link href="/commissions" role="menuitem" onClick={() => setOpen(false)} className={item}>
+            <Hammer className="h-4 w-4" /> {t("nav.commissions")}
           </Link>
           {user.role === "admin" && (
             <Link href="/admin" role="menuitem" onClick={() => setOpen(false)} className={item}>

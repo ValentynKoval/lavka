@@ -8,6 +8,7 @@ import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { ImageUploader } from "./image-uploader";
+import { ProcessEditor } from "./process-editor";
 
 const initial: FormState = {};
 
@@ -78,6 +79,12 @@ export function ProductForm({ product }: { product?: Product }) {
       <section className="rounded-3xl bg-white p-6 shadow-card">
         <h2 className="mb-5 font-sans text-lg font-bold text-ink-900">{t("seller.form.photos")}</h2>
         <ImageUploader name="images" label={t("seller.form.photosLabel")} hint={t("seller.form.photosHint")} initial={product?.images.map((img) => ({ url: img.url, alt: img.alt })) ?? []} max={8} error={errors.images} />
+      </section>
+
+      <section className="rounded-3xl bg-white p-6 shadow-card">
+        <h2 className="font-sans text-lg font-bold text-ink-900">{t("process.editorTitle")}</h2>
+        <p className="mb-5 mt-1 text-sm text-ink-500">{t("process.editorHint")}</p>
+        <ProcessEditor initial={product?.process ?? []} />
       </section>
 
       {state.error && (

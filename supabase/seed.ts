@@ -97,6 +97,7 @@ async function main() {
           is_featured: product.isFeatured,
           palette: product.palette,
           color_tags: product.colorTags,
+          process: product.process,
           created_at: product.createdAt,
           updated_at: product.updatedAt,
         },

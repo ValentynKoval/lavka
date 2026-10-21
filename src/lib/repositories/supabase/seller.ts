@@ -31,6 +31,7 @@ function productPayload(input: ProductInput) {
     status: input.status,
     tags: input.tags,
     ...(input.palette ? { palette: input.palette, color_tags: paletteTags(input.palette) } : {}),
+    ...(input.process ? { process: input.process } : {}),
   };
 }
 

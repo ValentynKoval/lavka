@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Command, Loader2, Search, Store, Tag } from "lucide-react";
+import { ArrowRight, Command, Loader2, Search, Store, Tag, Sparkles } from "lucide-react";
 import { useT } from "@/i18n/client";
 import { quickSearchAction, type QuickSearchResult } from "@/lib/catalog/search-actions";
 import { cn, formatPrice } from "@/lib/utils";
@@ -84,6 +84,22 @@ export function CommandPalette() {
   );
 
   const items: Item[] = [
+    ...(visible.suggestion
+      ? [
+          {
+            key: "suggest",
+            href: `/catalog?q=${encodeURIComponent(visible.suggestion)}`,
+            render: () => (
+              <>
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-moss-100 text-moss-700"><Sparkles className="h-4 w-4" /></span>
+                <span className="flex-1 text-sm text-ink-900">
+                  {t("search.didYouMean")} <span className="font-semibold">{visible.suggestion}</span>
+                </span>
+              </>
+            ),
+          } satisfies Item,
+        ]
+      : []),
     ...visible.categories.map<Item>((c) => ({
       key: `c-${c.slug}`,
       href: `/catalog?category=${c.slug}`,

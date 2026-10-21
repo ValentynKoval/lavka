@@ -21,6 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
 import { PaletteStrip } from "@/components/product/palette-strip";
 import { LiveViewers } from "@/components/product/live-viewers";
+import { QuestionsSection } from "@/components/product/questions-section";
+import { ProcessTimeline } from "@/components/product/process-timeline";
+import { AddToCollection } from "@/components/collections/add-to-collection";
+import { CompareButton } from "@/components/compare/compare-button";
+import { CommissionRequestButton } from "@/components/commissions/commission-request-button";
 
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { t } = await getTranslator();
@@ -52,6 +57,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const category = taxonomy.categoryBySlug(product.categorySlug);
   const region = product.shop ? taxonomy.regionBySlug(product.shop.regionSlug)?.name : undefined;
   const lowStock = product.stock > 0 && product.stock <= 3;
+  const isOwner = Boolean(user && shop && shop.ownerId === user.id);
   const fact = "text-xs font-bold uppercase tracking-wide text-ink-500";
 
   return (
@@ -73,7 +79,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
-        <Gallery images={product.images} title={product.title} />
+        <Gallery images={product.images} title={product.title} productId={product.id} />
 
         <div className="flex flex-col">
           <div className="flex flex-wrap items-center gap-2">
@@ -112,11 +118,18 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
             <AddToCartButton product={product} />
             <FavoriteButton productId={product.id} size="md" withLabel className="w-fit bg-linen-100 shadow-none hover:bg-linen-200" />
           </div>
-          <form action={chat} className="mt-3">
-            <button type="submit" className="inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:underline">
-              <MessageCircle className="h-4 w-4" /> {t("product.writeToMaker")}
-            </button>
-          </form>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <AddToCollection productId={product.id} signedIn={Boolean(user)} />
+            <CompareButton productId={product.id} size="md" withLabel className="bg-linen-100 shadow-none hover:bg-linen-200" />
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <form action={chat}>
+              <button type="submit" className="inline-flex items-center gap-2 text-sm font-semibold text-clay-600 hover:underline">
+                <MessageCircle className="h-4 w-4" /> {t("product.writeToMaker")}
+              </button>
+            </form>
+            {product.shop && !isOwner && <CommissionRequestButton shopSlug={product.shop.slug} productSlug={product.slug} />}
+          </div>
 
           <div className="mt-8 space-y-4 text-[15px] leading-relaxed text-ink-700">
             {product.description.split("\n").map((p, i) => (
@@ -180,7 +193,11 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         </section>
       )}
 
+      <ProcessTimeline steps={product.process} makerName={shop?.name} />
+
       <ReviewsSection product={product} user={user} />
+
+      <QuestionsSection product={product} user={user} isOwner={isOwner} />
 
       {related.length > 0 && (
         <section className="mt-20">

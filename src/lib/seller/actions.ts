@@ -10,7 +10,7 @@ import { extractPaletteFromUrl } from "@/lib/color/extract";
 import type { Translator } from "@/i18n/translator";
 import { requireSeller, requireUser } from "@/lib/auth/session";
 import { getSellerRepository } from "@/lib/repositories";
-import type { ProductInput } from "@/lib/types";
+import type { ProcessStep, ProductInput } from "@/lib/types";
 
 export interface FormState {
   error?: string;
@@ -80,6 +80,21 @@ function parseShop(t: Translator["t"], formData: FormData) {
   });
 }
 
+/** "How it's made" steps arrive as JSON from the client editor; anything malformed is dropped. */
+function parseProcess(raw: string): ProcessStep[] {
+  try {
+    const parsed: unknown = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((s) => (s && typeof s === "object" ? (s as Record<string, unknown>) : {}))
+      .map((s) => ({ title: String(s.title ?? "").trim().slice(0, 80), text: String(s.text ?? "").trim().slice(0, 500), imageUrl: typeof s.imageUrl === "string" && s.imageUrl ? s.imageUrl : null }))
+      .filter((s) => s.title || s.text)
+      .slice(0, 8);
+  } catch {
+    return [];
+  }
+}
+
 function parseProduct(t: Translator["t"], formData: FormData) {
   let images: { url: string; alt: string }[] = [];
   try {
@@ -146,6 +161,7 @@ export async function saveProductAction(_prev: FormState, formData: FormData): P
   if (input.compareAtPrice !== null && input.compareAtPrice <= input.price) {
     return { fieldErrors: { compareAtPrice: translator.t("seller.errors.compareAt") } };
   }
+  input.process = parseProcess(str(formData, "process"));
   // Colours come from the photo, not from the form; a failed extraction leaves them empty.
   input.palette = input.images[0] ? await extractPaletteFromUrl(input.images[0].url) : [];
   const productId = str(formData, "productId");

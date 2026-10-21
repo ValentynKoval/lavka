@@ -7,7 +7,7 @@ import { useT } from "@/i18n/client";
 import type { ProductImage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function Gallery({ images, title }: { images: ProductImage[]; title: string }) {
+export function Gallery({ images, title, productId }: { images: ProductImage[]; title: string; productId?: string }) {
   const { t } = useT();
   const [index, setIndex] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
@@ -25,6 +25,7 @@ export function Gallery({ images, title }: { images: ProductImage[]; title: stri
     <div className="flex flex-col gap-3 lg:flex-row-reverse lg:gap-4">
       <div
         data-product-image
+        style={productId ? { viewTransitionName: `product-${productId}` } : undefined}
         className="group/zoom relative aspect-square flex-1 cursor-zoom-in overflow-hidden rounded-3xl bg-linen-200 shadow-card"
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();

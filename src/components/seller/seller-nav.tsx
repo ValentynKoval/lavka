@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ExternalLink, LayoutDashboard, MessageCircle, Package, PlusCircle, Receipt, Settings, Store } from "lucide-react";
+import { BarChart3, ExternalLink, Hammer, LayoutDashboard, MessageCircle, Package, PlusCircle, Receipt, Settings, Store } from "lucide-react";
 import { useT } from "@/i18n/client";
 import type { Shop } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ export function SellerNav({ shop }: { shop: Shop | null }) {
         { href: "/seller/products", label: t("seller.nav.products"), icon: Package },
         { href: "/seller/products/new", label: t("seller.nav.add"), icon: PlusCircle, exact: true },
         { href: "/seller/orders", label: t("seller.nav.orders"), icon: Receipt },
+        { href: "/seller/commissions", label: t("seller.nav.commissions"), icon: Hammer },
         { href: "/seller/analytics", label: t("seller.nav.analytics"), icon: BarChart3 },
         { href: "/messages", label: t("seller.nav.messages"), icon: MessageCircle },
         { href: "/seller/shop", label: t("seller.nav.settings"), icon: Settings },

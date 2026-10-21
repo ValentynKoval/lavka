@@ -58,6 +58,7 @@ export function mapProduct(row: ProductRowWithRelations): Product {
     isFeatured: row.is_featured,
     palette: row.palette ?? [],
     colorTags: row.color_tags ?? [],
+    process: Array.isArray(row.process) ? row.process : [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     shop: row.shops

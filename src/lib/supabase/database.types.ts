@@ -51,6 +51,7 @@ export type ProductRow = {
   is_featured: boolean;
   palette: string[];
   color_tags: string[];
+  process: { title: string; text: string; imageUrl: string | null }[];
   created_at: string;
   updated_at: string;
 };
@@ -100,6 +101,11 @@ export type Database = {
       conversations: Table<ConversationRow, Pick<ConversationRow, "buyer_id" | "shop_id"> & Partial<ConversationRow>>;
       messages: Table<MessageRow, Pick<MessageRow, "conversation_id" | "sender_id" | "body"> & Partial<MessageRow>>;
       product_views: Table<ProductViewRow, Pick<ProductViewRow, "product_id"> & Partial<ProductViewRow>>;
+      commissions: Table<CommissionRow, Pick<CommissionRow, "buyer_id" | "shop_id" | "title"> & Partial<CommissionRow>>;
+      notifications: Table<NotificationRow, Pick<NotificationRow, "user_id" | "type"> & Partial<NotificationRow>>;
+      collections: Table<CollectionRow, Pick<CollectionRow, "owner_id" | "slug" | "title"> & Partial<CollectionRow>>;
+      collection_items: Table<CollectionItemRow, Pick<CollectionItemRow, "collection_id" | "product_id"> & Partial<CollectionItemRow>>;
+      product_questions: Table<ProductQuestionRow, Pick<ProductQuestionRow, "product_id" | "user_id" | "body"> & Partial<ProductQuestionRow>>;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -113,6 +119,8 @@ export type Database = {
         Returns: { users: number; sellers: number; shops: number; products: number; active_products: number; orders: number; revenue: number; reviews: number; messages: number }[];
       };
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      search_products: { Args: { q: string }; Returns: { id: string; score: number }[] };
+      suggest_titles: { Args: { q: string }; Returns: { title: string; score: number }[] };
     };
     Enums: {
       user_role: UserRoleRow;
@@ -120,6 +128,7 @@ export type Database = {
       order_status: OrderStatusRow;
       payment_method: PaymentMethodRow;
       payment_status: PaymentStatusRow;
+      commission_status: CommissionStatusRow;
     };
     CompositeTypes: { [_ in never]: never };
   };
@@ -194,4 +203,62 @@ export type ProductViewRow = {
   product_id: string;
   day: string;
   views: number;
+};
+
+// --- Stage 5 rows -------------------------------------------------------------
+
+export type CommissionStatusRow = "new" | "quoted" | "accepted" | "declined" | "done";
+
+export type CommissionRow = {
+  id: string;
+  buyer_id: string;
+  shop_id: string;
+  product_id: string | null;
+  title: string;
+  description: string;
+  budget: number | null;
+  deadline: string | null;
+  status: CommissionStatusRow;
+  quote_price: number | null;
+  quote_days: number | null;
+  quote_note: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NotificationRow = {
+  id: string;
+  user_id: string;
+  type: string;
+  payload: Record<string, string | number>;
+  href: string;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type CollectionRow = {
+  id: string;
+  owner_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  is_public: boolean;
+  created_at: string;
+};
+
+export type CollectionItemRow = {
+  collection_id: string;
+  product_id: string;
+  note: string;
+  added_at: string;
+};
+
+export type ProductQuestionRow = {
+  id: string;
+  product_id: string;
+  user_id: string;
+  body: string;
+  answer: string | null;
+  answered_at: string | null;
+  created_at: string;
 };

@@ -1,5 +1,6 @@
 import { applyCatalogFilters, priceBounds, sortProducts } from "@/lib/catalog/filter";
 import { rankByPalette } from "@/lib/color/similar";
+import { fuzzyRank, suggestQuery } from "@/lib/search/fuzzy";
 import { ratingSummary } from "@/lib/stats/aggregate";
 import type { CatalogFilters, Product, Shop } from "@/lib/types";
 import type { CatalogRepository } from "../types";
@@ -30,7 +31,16 @@ function activeProducts(): Product[] {
 
 export const mockCatalogRepository: CatalogRepository = {
   async listProducts(filters: CatalogFilters) {
-    return applyCatalogFilters(allProducts(), filters);
+    const products = allProducts();
+    if (!filters.query) return applyCatalogFilters(products, filters);
+    // Typo-tolerant: trigram ranking replaces the plain substring match.
+    const ranked = fuzzyRank(filters.query, products.map((p) => ({ id: p.id, title: p.title, haystack: `${p.title} ${p.description} ${p.tags.join(" ")} ${p.shop?.name ?? ""}` })));
+    const order = new Map(ranked.map((r, i) => [r.id, i]));
+    const matched = products.filter((p) => order.has(p.id)).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    return applyCatalogFilters(matched, { ...filters, query: undefined });
+  },
+  async suggestQuery(query) {
+    return suggestQuery(query, activeProducts().map((p) => p.title));
   },
   async getProductBySlug(slug) {
     return activeProducts().find((p) => p.slug === slug) ?? null;

@@ -1,6 +1,6 @@
 import { DEMO_PRODUCTS, DEMO_SHOPS, DEMO_USERS, type DemoUser } from "@/data/demo";
 import { DEMO_CONVERSATIONS, DEMO_MESSAGES, DEMO_ORDERS, DEMO_PROMO_CODES, DEMO_REVIEWS, DEMO_VIEWS } from "@/data/demo-stage2";
-import type { Conversation, Message, Order, Product, PromoCode, Review, Shop } from "@/lib/types";
+import type { Collection, CollectionItem, Commission, Conversation, Message, Notification, Order, Product, ProductQuestion, PromoCode, Review, Shop } from "@/lib/types";
 
 /**
  * In-memory state for demo mode (no Supabase keys).
@@ -20,6 +20,11 @@ export interface MockState {
   messages: Message[];
   views: { productId: string; day: string; views: number }[];
   orderCounter: number;
+  commissions: Commission[];
+  notifications: Notification[];
+  collections: Collection[];
+  collectionItems: (CollectionItem & { collectionId: string })[];
+  questions: ProductQuestion[];
 }
 
 const KEY = "__lavkaMockState" as const;
@@ -38,6 +43,11 @@ function createState(): MockState {
     messages: structuredClone(DEMO_MESSAGES),
     views: structuredClone(DEMO_VIEWS),
     orderCounter: 1001 + DEMO_ORDERS.length,
+    commissions: [],
+    notifications: [],
+    collections: [],
+    collectionItems: [],
+    questions: [],
   };
 }
 

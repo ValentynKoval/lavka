@@ -45,6 +45,9 @@ seller analytics, command palette, dark mode, OG images, sitemap/robots/JSON-LD.
 Stage 3 (done 2026-10-18): UI in three languages (UA/EN/RU) with a cookie-based locale switcher.
 Stage 4 (done 2026-10-21): shop by colour (server-side palette extraction), gift finder, interactive makers map, Realtime Presence
 viewer counter, /about page with one-click demo sign-in, motion polish (reveal, tilt, fly-to-cart, confetti, progress bar).
+Stage 5 (done 2026-10-21): custom orders (commissions), notification centre on DB triggers + Realtime, pg_trgm fuzzy search with
+"did you mean", public collections with OG cards, compare table, product Q&A, "how it's made" steps, shop accent colours,
+View Transitions morph between catalogue and product.
 Not planned unless asked: real payments (Stripe), e-mail notifications, shipping APIs, translated product content.
 
 ## Stage 2 conventions
@@ -65,3 +68,13 @@ Not planned unless asked: real payments (Stripe), e-mail notifications, shipping
 - Gift finder logic is pure (`src/lib/gifts/finder.ts`): recipient → categories, occasion → tags, style → colour tags + materials.
 - Motion: every decorative effect (Reveal, tilt, fly-to-cart, confetti, CountUp) must stay inert under `prefers-reduced-motion`.
 - Demo sign-in (`demoSignInAction`) is intentional for the portfolio: the accounts and password are public in the README.
+
+## Stage 5 conventions
+
+- Notifications are never inserted from application code in Supabase mode: Postgres triggers (`notify_*` in 0007) write them.
+  Demo mode mirrors each trigger with `mockNotify` at the same points (orders, status, messages, reviews, commissions, products, questions).
+  A new notification type needs: the trigger (or mock call), the `NotificationType` union and `notifications.types.<type>` in all three dictionaries.
+- Commission transitions live in `COMMISSION_TRANSITIONS` (`src/lib/commissions/transitions.ts`); actions check them per role before writing.
+- Free-text search goes through `search_products()` (pg_trgm) in Supabase mode and `fuzzyRank()` in demo mode; keep the two thresholds aligned (0.3).
+- `TransitionLink` names only the clicked element for the view transition; the target page gives the same `view-transition-name` to its hero image.
+- Collections and questions are plain tables with RLS; the public collection page is `/c/[slug]` and has its own `opengraph-image.tsx`.

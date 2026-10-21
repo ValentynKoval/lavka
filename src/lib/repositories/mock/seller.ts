@@ -4,6 +4,7 @@ import type { Product, ProductInput, Shop } from "@/lib/types";
 import { paletteTags } from "@/lib/color/palette";
 import type { SellerRepository } from "../types";
 import { getMockState, newId } from "./store";
+import { mockNotifyProductChange } from "./stage3";
 
 function uniqueSlug(base: string, taken: (slug: string) => boolean): string {
   const root = slugify(base) || "item";
@@ -28,6 +29,7 @@ function applyInput(product: Product, input: ProductInput): Product {
     images: input.images.map((img, i) => ({ id: newId("img"), url: img.url, alt: img.alt, sortOrder: i })),
     palette: input.palette ?? product.palette,
     colorTags: paletteTags(input.palette ?? product.palette),
+    process: input.process ?? product.process,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -86,6 +88,7 @@ export const mockSellerRepository: SellerRepository = {
       isFeatured: false,
       palette: [],
       colorTags: [],
+      process: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -97,15 +100,19 @@ export const mockSellerRepository: SellerRepository = {
     const state = getMockState();
     const index = state.products.findIndex((p) => p.id === productId && p.shopId === shopId);
     if (index === -1) throw new AppError("seller.errors.productNotFound");
-    const updated = applyInput(state.products[index], input);
+    const before = state.products[index];
+    const updated = applyInput(before, input);
     state.products[index] = updated;
+    mockNotifyProductChange(before, updated);
     return updated;
   },
   async updateStock(shopId, productId, stock) {
     const product = await this.getOwnProduct(shopId, productId);
     if (!product) throw new AppError("seller.errors.productNotFound");
+    const before = { ...product };
     product.stock = Math.max(0, stock);
     product.updatedAt = new Date().toISOString();
+    mockNotifyProductChange(before, product);
   },
   async deleteProduct(shopId, productId) {
     const state = getMockState();

@@ -12,8 +12,9 @@ import { UserDataSync } from "./user-data-sync";
 import { ThemeToggle } from "./theme-toggle";
 import { CommandPaletteTrigger } from "./command-palette";
 import { LocaleSwitcher } from "./locale-switcher";
+import { NotificationBell } from "./notification-bell";
 
-export async function Header({ user, demo, unread = 0 }: { user: Profile | null; demo: boolean; unread?: number }) {
+export async function Header({ user, demo, unread = 0, notifications = 0 }: { user: Profile | null; demo: boolean; unread?: number; notifications?: number }) {
   const { t, locale } = await getTranslator();
   const { categories } = getTaxonomy(locale);
   const navLink = "rounded-full px-3.5 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-900/5 hover:text-ink-900";
@@ -52,6 +53,7 @@ export async function Header({ user, demo, unread = 0 }: { user: Profile | null;
             <Heart className="h-5 w-5" />
             <FavoritesBadge />
           </Link>
+          {user && <NotificationBell userId={user.id} initialUnread={notifications} realtime={!demo} />}
           {user && (
             <Link href="/messages" className={iconLink} aria-label={t("nav.messages")}>
               <MessageCircle className="h-5 w-5" />

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { SearchX } from "lucide-react";
 import { getTaxonomy } from "@/data/taxonomy-i18n";
@@ -25,7 +26,7 @@ export default async function CatalogPage({ searchParams }: PageProps<"/catalog"
   const { t, tp, locale } = await getTranslator();
   const filters = parseCatalogFilters(await searchParams);
   const repo = getCatalogRepository();
-  const [page, bounds] = await Promise.all([repo.listProducts(filters), repo.getPriceBounds()]);
+  const [page, bounds, suggestion] = await Promise.all([repo.listProducts(filters), repo.getPriceBounds(), filters.query ? repo.suggestQuery(filters.query) : Promise.resolve(null)]);
   const category = filters.category ? getTaxonomy(locale).categoryBySlug(filters.category) : undefined;
   const activeCount = countActiveFilters(filters);
 
@@ -37,6 +38,15 @@ export default async function CatalogPage({ searchParams }: PageProps<"/catalog"
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-clay-500">{t("catalog.eyebrow")}</p>
         <h1 className="text-4xl font-semibold text-ink-900 sm:text-5xl">{heading}</h1>
         <p className="mt-3 text-base text-ink-500">{category?.description ?? t("catalog.defaultDescription")}</p>
+        {suggestion && (
+          <p className="mt-4 rounded-2xl bg-clay-50 px-4 py-3 text-sm text-ink-700">
+            {t("catalog.didYouMean")}{" "}
+            <Link href={`/catalog?${buildCatalogQuery({ ...filters, query: suggestion, page: 1 })}`} className="font-semibold text-clay-600 underline-offset-4 hover:underline">
+              {suggestion}
+            </Link>
+            ?
+          </p>
+        )}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">

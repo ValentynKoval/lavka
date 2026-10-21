@@ -1,6 +1,7 @@
 import { paletteTags } from "@/lib/color/palette";
 import type { Product, ProductStatus, Shop, UserRole } from "@/lib/types";
 import palettes from "./demo-palettes.json";
+import { demoProcess } from "./demo-process";
 
 const PALETTES: Record<string, string[]> = palettes;
 
@@ -614,6 +615,7 @@ export const DEMO_PRODUCTS: Product[] = seeds.map((s) => {
     isFeatured: s.featured ?? false,
     palette,
     colorTags: paletteTags(palette),
+    process: s.featured ? demoProcess(s.category) : [],
     createdAt,
     updatedAt: createdAt,
   };

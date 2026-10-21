@@ -6,7 +6,9 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getChatRepository, isDemoMode } from "@/lib/repositories";
+import { getChatRepository, getNotificationsRepository, isDemoMode } from "@/lib/repositories";
+import { ViewTransitionsProvider } from "@/components/layout/view-transitions";
+import { CompareBar } from "@/components/compare/compare-bar";
 import { WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
@@ -45,7 +47,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
-  const unread = user ? await getChatRepository().unreadCount(user.id).catch(() => 0) : 0;
+  const [unread, notifications] = user
+    ? await Promise.all([getChatRepository().unreadCount(user.id).catch(() => 0), getNotificationsRepository().unreadCount(user.id).catch(() => 0)])
+    : [0, 0];
   return (
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning className={`${manrope.variable} ${playfair.variable} h-full antialiased`}>
       <head>
@@ -57,12 +61,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <NavigationProgress />
           </Suspense>
           <Suspense fallback={<div className="h-16 lg:h-[72px]" />}>
-            <Header user={user} demo={isDemoMode()} unread={unread} />
+            <Header user={user} demo={isDemoMode()} unread={unread} notifications={notifications} />
           </Suspense>
-          <main className="flex-1">{children}</main>
+          <ViewTransitionsProvider>
+            <main className="flex-1">{children}</main>
+          </ViewTransitionsProvider>
           <Footer />
           <Toaster />
           <CommandPalette />
+          <CompareBar />
         </I18nProvider>
         <WebsiteJsonLd />
       </body>

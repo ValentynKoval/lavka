@@ -4,6 +4,7 @@ import { computeCheckout, promoPercent } from "@/lib/orders/checkout";
 import type { CartLineDetailed, Conversation, Order, Product, Profile, Review, Shop } from "@/lib/types";
 import type { AdminRepository, ChatRepository, OrdersRepository, ReviewsRepository, StatsRepository } from "../types-stage2";
 import { getMockState, newId } from "./store";
+import { mockNotify } from "./stage3";
 
 function shopRef(shop: Shop | undefined) {
   return shop ? { id: shop.id, slug: shop.slug, name: shop.name, avatarUrl: shop.avatarUrl } : undefined;
@@ -63,6 +64,10 @@ export const mockOrdersRepository: OrdersRepository = {
       };
     });
     state.orders.push(...created);
+    for (const order of created) {
+      const owner = state.shops.find((s) => s.id === order.shopId)?.ownerId ?? "";
+      mockNotify(owner, "order_new", { number: order.number, total: order.total }, `/seller/orders/${order.id}`);
+    }
     return created.map(decorateOrder);
   },
   async listBuyerOrders(buyerId) {
@@ -93,6 +98,7 @@ export const mockOrdersRepository: OrdersRepository = {
     if (status === "cancelled") order.paymentStatus = order.paymentStatus === "paid" ? "refunded" : "pending";
     if (status === "delivered" && order.paymentMethod === "cod") order.paymentStatus = "paid";
     order.updatedAt = new Date().toISOString();
+    mockNotify(order.buyerId, "order_status", { number: order.number, status }, `/orders/${order.id}`);
   },
   async getPromoCode(code) {
     const promo = getMockState().promoCodes.find((p) => p.code === code.trim().toUpperCase());
@@ -119,6 +125,9 @@ export const mockReviewsRepository: ReviewsRepository = {
     }
     const review: Review = { id: newId("rev"), productId, userId, authorName, rating, text, createdAt: new Date().toISOString() };
     state.reviews.push(review);
+    const product = state.products.find((p) => p.id === productId);
+    const owner = product ? state.shops.find((s) => s.id === product.shopId)?.ownerId ?? "" : "";
+    if (product && owner !== userId) mockNotify(owner, "review", { title: product.title, rating }, `/product/${product.slug}#reviews`);
     return review;
   },
   async deleteReview(userId, reviewId) {
@@ -197,6 +206,8 @@ export const mockChatRepository: ChatRepository = {
     const message = { id: newId("msg"), conversationId, senderId, body: body.trim(), createdAt: new Date().toISOString(), readAt: null };
     state.messages.push(message);
     conv.lastMessageAt = message.createdAt;
+    const owner = state.shops.find((s) => s.id === conv.shopId)?.ownerId ?? "";
+    mockNotify(senderId === conv.buyerId ? owner : conv.buyerId, "message", { preview: message.body.slice(0, 80) }, `/messages/${conversationId}`);
     return message;
   },
   async markRead(conversationId, readerId) {

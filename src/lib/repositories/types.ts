@@ -12,6 +12,8 @@ export interface CatalogRepository {
   /** Products from other shops whose palette is closest to this one. */
   getSimilarByColor(product: Product, limit: number): Promise<Product[]>;
   getPriceBounds(): Promise<{ min: number; max: number }>;
+  /** "Did you mean …" for a free-text query; null when the query already matches well. */
+  suggestQuery(query: string): Promise<string | null>;
   listShops(): Promise<Shop[]>;
   getShopBySlug(slug: string): Promise<Shop | null>;
   getShopProducts(shopId: string): Promise<Product[]>;

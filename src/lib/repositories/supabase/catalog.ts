@@ -1,5 +1,6 @@
 import { applyCatalogFilters, PAGE_SIZE, sortProducts } from "@/lib/catalog/filter";
 import { rankByPalette } from "@/lib/color/similar";
+import { normalizeQuery, suggestQuery } from "@/lib/search/fuzzy";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { CatalogFilters, Product } from "@/lib/types";
 import type { CatalogRepository } from "../types";
@@ -18,6 +19,16 @@ export const supabaseCatalogRepository: CatalogRepository = {
     // Structured filters run in Postgres; free-text search and region (a shop attribute)
     // are refined in memory on the already narrowed set.
     let query = supabase.from("products").select(PRODUCT_SELECT).eq("shops.is_hidden", false).eq("status", "active");
+    // Free text goes through pg_trgm first (typo tolerant); the matched ids narrow the main query.
+    let order: Map<string, number> | null = null;
+    if (filters.query) {
+      const { data: hits, error: searchError } = await supabase.rpc("search_products", { q: normalizeQuery(filters.query) });
+      if (searchError) throw new Error(searchError.message);
+      const ids = (hits ?? []).map((h) => h.id);
+      if (ids.length === 0) return { items: [], total: 0, page: 1, pageCount: 1 };
+      order = new Map(ids.map((id, i) => [id, i]));
+      query = query.in("id", ids);
+    }
     if (filters.category) query = query.eq("category_slug", filters.category);
     if (filters.materials?.length) query = query.overlaps("materials", filters.materials);
     if (filters.priceMin !== undefined) query = query.gte("price", filters.priceMin);
@@ -27,8 +38,12 @@ export const supabaseCatalogRepository: CatalogRepository = {
     if (filters.regions?.length) query = query.in("shops.region_slug", filters.regions);
     const { data, error } = await query;
     if (error) throw new Error(error.message);
-    const products = (data as unknown as ProductRowWithRelations[]).map(mapProduct);
-    return applyCatalogFilters(products, { query: filters.query, sort: filters.sort, page: filters.page });
+    let products = (data as unknown as ProductRowWithRelations[]).map(mapProduct);
+    if (order) {
+      const rank = order;
+      products = products.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+    }
+    return applyCatalogFilters(products, { sort: filters.sort, page: filters.page });
   },
   async getProductBySlug(slug) {
     const supabase = await createSupabaseServerClient();
@@ -95,6 +110,11 @@ export const supabaseCatalogRepository: CatalogRepository = {
       .limit(60);
     if (error) throw new Error(error.message);
     return rankByPalette(product, (data as unknown as ProductRowWithRelations[]).map(mapProduct), limit);
+  },
+  async suggestQuery(queryText) {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.rpc("suggest_titles", { q: normalizeQuery(queryText) });
+    return suggestQuery(queryText, (data ?? []).map((r) => r.title));
   },
   async getPriceBounds() {
     const supabase = await createSupabaseServerClient();
